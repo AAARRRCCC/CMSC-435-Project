@@ -26,10 +26,10 @@ def removeLabels(filePath, labelOutput):
 def createSequencingCSV(dataFrame: df, sequenceOutput):
     with open(sequenceOutput, "w", encoding="utf-8") as f:
         for i, (_, row) in enumerate(dataFrame.iterrows(), start=1):
-            row_data = " ".join(str(val) for val in row.values)
+            rowData = " ".join(str(val) for val in row.values)
             
             f.write(f">seq_{i}\n")
-            f.write(f"{row_data}\n")
+            f.write(f"{rowData}\n")
 
 # Append labels to formatted data
 def appendLabelsToData(dataFile, labelFile, outputFile):
