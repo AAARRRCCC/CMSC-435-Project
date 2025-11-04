@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# UV
+.uv/
+
+# Data files (usually too large for git)
+# *.csv
+# *.fa
+# *.fasta
+# Dataset/
+# *.h5
+# *.pkl
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model files (if you generate any)
+*.model
+*.joblib
+*.pkl
