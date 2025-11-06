@@ -18,7 +18,7 @@ def normalize(input_path):
     return df
 
 def rm_main(input_path):
-    df = pd.read_csv('../Dataset/Unfinished/pfeature_result.csv')
+    df = pd.read_csv(input_path)
     #df = pd.read_csv('../Dataset/Unfinished/pfeature_with_labels.csv')
 
 
@@ -27,7 +27,7 @@ def rm_main(input_path):
     numerical_cols = df.select_dtypes(include=['float64', 'int64']).columns
     df[numerical_cols] = scaler.fit_transform(df[numerical_cols])
 
-    df.to_csv('../Dataset/Unfinished/pfeature_result_normalized.csv', index=False)
+    #df.to_csv('../Dataset/Unfinished/pfeature_result_normalized.csv', index=False)
     #df.to_csv('../Dataset/finished/pfeature_with_labels_normalized.csv', index=False)
 
     return df

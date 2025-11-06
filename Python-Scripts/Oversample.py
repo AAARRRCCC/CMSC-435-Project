@@ -25,7 +25,7 @@ df_resampled.to_csv('../Dataset/full_normalized_BSMOTE.csv', index=False)
 
 def rm_main(filepath):
 
-    df = pd.read_csv('filepath')
+    df = pd.read_csv(filepath)
 
     smote = BorderlineSMOTE(sampling_strategy={'DNA':2000, 'RNA':2000, 'DRNA':500}, kind='borderline-1', random_state=42) 
     x_resampled, y_resampled = smote.fit_resample(x, y)
