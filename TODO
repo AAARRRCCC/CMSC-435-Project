@@ -1,4 +1,7 @@
 Ryan
-
-
+    generalize pipeline to not have hardcoded file paths
+    automated email to kurgan on every run
+    
 Eli
+    discretization algorithm
+
