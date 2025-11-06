@@ -50,18 +50,22 @@ def main(data: pd.DataFrame):
 
     return results
 
+def rm_main(filepath):
+    dataDF = getConfusionDF(filepath)
+
+    results = main(dataDF)
+    for result in results:
+        print(
+            f"Label: {result['Label']}\n"
+            f"\tSpecificity: {result['Specificity']:.3f}\n"
+            f"\tSensitivity: {result['Sensitivity']:.3f}\n"
+            f"\tAccuracy: {result['Accuracy']:.3f}\n"
+            f"\tMCC: {result['MCC']:.3f}\n"
+        )
+
 if __name__ == "__main__":
     filepath = "../Dataset/rapidminer_results.csv"
     dataDF = getConfusionDF(filepath)
-
-    # data = [
-    #     [5, 10, 10],
-    #     [0, 25, 0],
-    #     [10, 12, 3]
-    # ]
-
-    # headers = ['NonDRNA', 'RNA', 'DNA']
-    # dataDF = df(data, columns=headers)
 
     results = main(dataDF)
     for result in results:
