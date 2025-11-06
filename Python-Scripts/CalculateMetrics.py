@@ -54,14 +54,16 @@ def rm_main(filepath):
     dataDF = getConfusionDF(filepath)
 
     results = main(dataDF)
-    for result in results:
-        print(
-            f"Label: {result['Label']}\n"
-            f"\tSpecificity: {result['Specificity']:.3f}\n"
-            f"\tSensitivity: {result['Sensitivity']:.3f}\n"
-            f"\tAccuracy: {result['Accuracy']:.3f}\n"
-            f"\tMCC: {result['MCC']:.3f}\n"
-        )
+
+    with open("../TempfilesAndOutput/metrics_output.txt", "w") as f:
+        for result in results:
+            f.write(
+                f"Label: {result['Label']}\n"
+                f"\tSpecificity: {result['Specificity']:.3f}\n"
+                f"\tSensitivity: {result['Sensitivity']:.3f}\n"
+                f"\tAccuracy: {result['Accuracy']:.3f}\n"
+                f"\tMCC: {result['MCC']:.3f}\n"
+            )
 
 if __name__ == "__main__":
     filepath = "../Dataset/rapidminer_results.csv"
