@@ -55,6 +55,6 @@ if __name__ == "__main__":
     # # Glue labels back on
     # # PLEASE put pfeature training file after making it into number in the unfinished folder
     #appendLabelsToData("../Dataset/Unfinished/pfeature_result_normalized.csv", "../DataSet/Unfinished/trainingLabels.csv", "../Dataset/full_normalized.csv")
-    appendLabelsToData("../Dataset/Unfinished/pfeature_result_normalized.csv", "../DataSet/Unfinished/trainingLabels.csv", "../Dataset/full_normalized.csv")
+    appendLabelsToData("../Dataset/Unfinished/pfeature_result.csv", "../DataSet/Unfinished/trainingLabels.csv", "../Dataset/full_not_normalized.csv")
 
     pass
