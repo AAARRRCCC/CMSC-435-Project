@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?><process version="12.0.001">
+  <context>
+    <input/>
+    <output/>
+    <macros/>
+  </context>
+  <operator activated="true" class="process" compatibility="12.0.001" expanded="true" name="Process">
+    <parameter key="logverbosity" value="init"/>
+    <parameter key="resultfile" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/pipeline_resultfile.res"/>
+    <parameter key="random_seed" value="2001"/>
+    <parameter key="send_mail" value="never"/>
+    <parameter key="notification_email" value=""/>
+    <parameter key="process_duration_for_mail" value="30"/>
+    <parameter key="encoding" value="SYSTEM"/>
+    <process expanded="true">
+      <operator activated="true" class="read_csv" compatibility="12.0.001" expanded="true" height="68" name="Read CSV" width="90" x="179" y="34">
+        <parameter key="csv_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/Dataset/full_not_normalized.csv"/>
+        <parameter key="column_separators" value=","/>
+        <parameter key="trim_lines" value="false"/>
+        <parameter key="multiline_text" value="false"/>
+        <parameter key="use_quotes" value="true"/>
+        <parameter key="quotes_character" value="&quot;"/>
+        <parameter key="escape_character" value="\"/>
+        <parameter key="skip_comments" value="false"/>
+        <parameter key="comment_characters" value="#"/>
+        <parameter key="starting_row" value="1"/>
+        <parameter key="parse_numbers" value="true"/>
+        <parameter key="decimal_character" value="."/>
+        <parameter key="grouped_digits" value="false"/>
+        <parameter key="grouping_character" value=","/>
+        <parameter key="infinity_representation" value=""/>
+        <parameter key="date_format" value=""/>
+        <parameter key="use_header_row" value="true"/>
+        <parameter key="header_row" value="1"/>
+        <parameter key="first_row_as_names" value="true"/>
+        <list key="annotations"/>
+        <parameter key="time_zone" value="America/New_York"/>
+        <parameter key="locale" value="English (United States)"/>
+        <parameter key="encoding" value="SYSTEM"/>
+        <parameter key="read_all_values_as_polynominal" value="false"/>
+        <list key="data_set_meta_data_information"/>
+        <parameter key="read_not_matching_values_as_missings" value="true"/>
+      </operator>
+      <operator activated="true" class="blending:set_role" compatibility="12.0.001" expanded="true" height="82" name="Set Role (3)" width="90" x="313" y="34">
+        <list key="set_roles">
+          <parameter key="class" value="label"/>
+        </list>
+      </operator>
+      <operator activated="true" class="concurrency:cross_validation" compatibility="12.0.001" expanded="true" height="145" name="Cross Validation" width="90" x="447" y="34">
+        <parameter key="split_on_batch_attribute" value="false"/>
+        <parameter key="leave_one_out" value="false"/>
+        <parameter key="number_of_folds" value="5"/>
+        <parameter key="sampling_type" value="stratified sampling"/>
+        <parameter key="use_local_random_seed" value="false"/>
+        <parameter key="local_random_seed" value="1992"/>
+        <parameter key="enable_parallel_execution" value="false"/>
+        <process expanded="true">
+          <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV (5)" width="90" x="179" y="34">
+            <parameter key="csv_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/Dataset/rapidminer_training_split.csv"/>
+            <parameter key="column_separator" value=","/>
+            <parameter key="write_attribute_names" value="true"/>
+            <parameter key="quote_nominal_values" value="true"/>
+            <parameter key="format_date_attributes" value="true"/>
+            <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+            <parameter key="append_to_file" value="false"/>
+            <parameter key="encoding" value="SYSTEM"/>
+          </operator>
+          <operator activated="true" class="write_file" compatibility="12.0.001" expanded="true" height="68" name="Write File" width="90" x="313" y="34">
+            <parameter key="resource_type" value="file"/>
+            <parameter key="filename" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/TempfilesAndOutput/rapidminer_working_process.csv"/>
+            <parameter key="mime_type" value="application/octet-stream"/>
+          </operator>
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Execute Python" width="90" x="45" y="187">
+            <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/Python-Scripts/Normalization.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV (2)" width="90" x="179" y="187">
+            <parameter key="column_separator" value=","/>
+            <parameter key="write_attribute_names" value="true"/>
+            <parameter key="quote_nominal_values" value="true"/>
+            <parameter key="format_date_attributes" value="true"/>
+            <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+            <parameter key="append_to_file" value="false"/>
+            <parameter key="encoding" value="SYSTEM"/>
+          </operator>
+          <operator activated="true" class="write_file" compatibility="12.0.001" expanded="true" height="68" name="Write File (2)" width="90" x="313" y="187">
+            <parameter key="resource_type" value="file"/>
+            <parameter key="filename" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/TempfilesAndOutput/rapidminer_working_process_normalized.csv"/>
+            <parameter key="mime_type" value="application/octet-stream"/>
+          </operator>
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Execute Python (2)" width="90" x="45" y="340">
+            <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/Python-Scripts/Oversample.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV (4)" width="90" x="179" y="340">
+            <parameter key="column_separator" value=","/>
+            <parameter key="write_attribute_names" value="true"/>
+            <parameter key="quote_nominal_values" value="true"/>
+            <parameter key="format_date_attributes" value="true"/>
+            <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+            <parameter key="append_to_file" value="false"/>
+            <parameter key="encoding" value="SYSTEM"/>
+          </operator>
+          <operator activated="true" class="write_file" compatibility="12.0.001" expanded="true" height="68" name="Write File (3)" width="90" x="313" y="340">
+            <parameter key="resource_type" value="file"/>
+            <parameter key="filename" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/TempfilesAndOutput/rapidminer_working_process_oversampled.csv"/>
+            <parameter key="mime_type" value="application/octet-stream"/>
+          </operator>
+          <operator activated="true" class="read_csv" compatibility="12.0.001" expanded="true" height="68" name="Read CSV (2)" width="90" x="447" y="34">
+            <parameter key="column_separators" value=","/>
+            <parameter key="trim_lines" value="false"/>
+            <parameter key="multiline_text" value="false"/>
+            <parameter key="use_quotes" value="true"/>
+            <parameter key="quotes_character" value="&quot;"/>
+            <parameter key="escape_character" value="\"/>
+            <parameter key="skip_comments" value="false"/>
+            <parameter key="comment_characters" value="#"/>
+            <parameter key="starting_row" value="1"/>
+            <parameter key="parse_numbers" value="true"/>
+            <parameter key="decimal_character" value="."/>
+            <parameter key="grouped_digits" value="false"/>
+            <parameter key="grouping_character" value=","/>
+            <parameter key="infinity_representation" value=""/>
+            <parameter key="date_format" value=""/>
+            <parameter key="use_header_row" value="true"/>
+            <parameter key="header_row" value="1"/>
+            <parameter key="first_row_as_names" value="true"/>
+            <list key="annotations"/>
+            <parameter key="time_zone" value="America/New_York"/>
+            <parameter key="locale" value="English (United States)"/>
+            <parameter key="encoding" value="SYSTEM"/>
+            <parameter key="read_all_values_as_polynominal" value="false"/>
+            <list key="data_set_meta_data_information"/>
+            <parameter key="read_not_matching_values_as_missings" value="true"/>
+          </operator>
+          <operator activated="true" class="blending:set_role" compatibility="12.0.001" expanded="true" height="82" name="Set Role" width="90" x="581" y="34">
+            <list key="set_roles">
+              <parameter key="class" value="label"/>
+            </list>
+          </operator>
+          <operator activated="true" class="h2o:gradient_boosted_trees" compatibility="11.0.002" expanded="true" height="103" name="Gradient Boosted Trees (2)" width="90" x="715" y="34">
+            <parameter key="number_of_trees" value="50"/>
+            <parameter key="reproducible" value="true"/>
+            <parameter key="maximum_number_of_threads" value="4"/>
+            <parameter key="use_local_random_seed" value="true"/>
+            <parameter key="local_random_seed" value="1984"/>
+            <parameter key="maximal_depth" value="5"/>
+            <parameter key="min_rows" value="10.0"/>
+            <parameter key="min_split_improvement" value="1.0E-5"/>
+            <parameter key="number_of_bins" value="20"/>
+            <parameter key="learning_rate" value="0.01"/>
+            <parameter key="sample_rate" value="1.0"/>
+            <parameter key="distribution" value="AUTO"/>
+            <parameter key="early_stopping" value="false"/>
+            <parameter key="stopping_rounds" value="1"/>
+            <parameter key="stopping_metric" value="AUTO"/>
+            <parameter key="stopping_tolerance" value="0.001"/>
+            <list key="monotone_constraints"/>
+            <parameter key="max_runtime_seconds" value="0"/>
+            <list key="expert_parameters"/>
+          </operator>
+          <connect from_port="training set" to_op="Write CSV (5)" to_port="input"/>
+          <connect from_op="Write CSV (5)" from_port="file" to_op="Write File" to_port="file"/>
+          <connect from_op="Write File" from_port="file" to_op="Execute Python" to_port="input 1"/>
+          <connect from_op="Execute Python" from_port="output 1" to_op="Write CSV (2)" to_port="input"/>
+          <connect from_op="Write CSV (2)" from_port="file" to_op="Write File (2)" to_port="file"/>
+          <connect from_op="Write File (2)" from_port="file" to_op="Execute Python (2)" to_port="input 1"/>
+          <connect from_op="Execute Python (2)" from_port="output 1" to_op="Write CSV (4)" to_port="input"/>
+          <connect from_op="Write CSV (4)" from_port="file" to_op="Write File (3)" to_port="file"/>
+          <connect from_op="Write File (3)" from_port="file" to_op="Read CSV (2)" to_port="file"/>
+          <connect from_op="Read CSV (2)" from_port="output" to_op="Set Role" to_port="example set input"/>
+          <connect from_op="Set Role" from_port="example set output" to_op="Gradient Boosted Trees (2)" to_port="training set"/>
+          <connect from_op="Gradient Boosted Trees (2)" from_port="model" to_port="model"/>
+          <portSpacing port="source_training set" spacing="0"/>
+          <portSpacing port="sink_model" spacing="0"/>
+          <portSpacing port="sink_through 1" spacing="0"/>
+        </process>
+        <process expanded="true">
+          <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV (3)" width="90" x="45" y="85">
+            <parameter key="csv_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/Dataset/rapidminer_working_process.csv"/>
+            <parameter key="column_separator" value=","/>
+            <parameter key="write_attribute_names" value="true"/>
+            <parameter key="quote_nominal_values" value="true"/>
+            <parameter key="format_date_attributes" value="true"/>
+            <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+            <parameter key="append_to_file" value="false"/>
+            <parameter key="encoding" value="SYSTEM"/>
+          </operator>
+          <operator activated="true" class="write_file" compatibility="12.0.001" expanded="true" height="68" name="Write File (4)" width="90" x="179" y="85">
+            <parameter key="resource_type" value="file"/>
+            <parameter key="filename" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/TempfilesAndOutput/rapidminer_testing_split_process.csv"/>
+            <parameter key="mime_type" value="application/octet-stream"/>
+          </operator>
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Execute Python (3)" width="90" x="45" y="238">
+            <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/Python-Scripts/Normalization.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV (6)" width="90" x="179" y="238">
+            <parameter key="column_separator" value=","/>
+            <parameter key="write_attribute_names" value="true"/>
+            <parameter key="quote_nominal_values" value="true"/>
+            <parameter key="format_date_attributes" value="true"/>
+            <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+            <parameter key="append_to_file" value="false"/>
+            <parameter key="encoding" value="SYSTEM"/>
+          </operator>
+          <operator activated="true" class="write_file" compatibility="12.0.001" expanded="true" height="68" name="Write File (5)" width="90" x="45" y="391">
+            <parameter key="resource_type" value="file"/>
+            <parameter key="filename" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/TempfilesAndOutput/rapidminer_testing_split_process_normalized.csv"/>
+            <parameter key="mime_type" value="application/octet-stream"/>
+          </operator>
+          <operator activated="true" class="read_csv" compatibility="12.0.001" expanded="true" height="68" name="Read CSV (3)" width="90" x="179" y="391">
+            <parameter key="column_separators" value=","/>
+            <parameter key="trim_lines" value="false"/>
+            <parameter key="multiline_text" value="false"/>
+            <parameter key="use_quotes" value="true"/>
+            <parameter key="quotes_character" value="&quot;"/>
+            <parameter key="escape_character" value="\"/>
+            <parameter key="skip_comments" value="false"/>
+            <parameter key="comment_characters" value="#"/>
+            <parameter key="starting_row" value="1"/>
+            <parameter key="parse_numbers" value="true"/>
+            <parameter key="decimal_character" value="."/>
+            <parameter key="grouped_digits" value="false"/>
+            <parameter key="grouping_character" value=","/>
+            <parameter key="infinity_representation" value=""/>
+            <parameter key="date_format" value=""/>
+            <parameter key="use_header_row" value="true"/>
+            <parameter key="header_row" value="1"/>
+            <parameter key="first_row_as_names" value="true"/>
+            <list key="annotations"/>
+            <parameter key="time_zone" value="America/New_York"/>
+            <parameter key="locale" value="English (United States)"/>
+            <parameter key="encoding" value="SYSTEM"/>
+            <parameter key="read_all_values_as_polynominal" value="false"/>
+            <list key="data_set_meta_data_information"/>
+            <parameter key="read_not_matching_values_as_missings" value="true"/>
+          </operator>
+          <operator activated="true" class="blending:set_role" compatibility="12.0.001" expanded="true" height="82" name="Set Role (2)" width="90" x="313" y="391">
+            <list key="set_roles">
+              <parameter key="class" value="label"/>
+            </list>
+          </operator>
+          <operator activated="true" class="apply_model" compatibility="12.0.001" expanded="true" height="82" name="Apply Model" width="90" x="447" y="34">
+            <list key="application_parameters"/>
+          </operator>
+          <operator activated="true" class="multiply" compatibility="12.0.001" expanded="true" height="103" name="Multiply" width="90" x="581" y="34"/>
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Execute Python (4)" width="90" x="715" y="187">
+            <parameter key="script" value="import os&#10;import pandas as pd&#10;&#10;def rm_main(data):&#10;    path = r&quot;/path/to/predictions.csv&quot;&#10;    header = not os.path.exists(path)&#10;    data.to_csv(path, mode='a', header=header, index=False)&#10;    return data"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/Python-Scripts/DataToCSV.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="true" class="performance_classification" compatibility="12.0.001" expanded="true" height="82" name="Performance" width="90" x="715" y="34">
+            <parameter key="main_criterion" value="first"/>
+            <parameter key="accuracy" value="true"/>
+            <parameter key="classification_error" value="false"/>
+            <parameter key="kappa" value="true"/>
+            <parameter key="weighted_mean_recall" value="false"/>
+            <parameter key="weighted_mean_precision" value="false"/>
+            <parameter key="spearman_rho" value="false"/>
+            <parameter key="kendall_tau" value="false"/>
+            <parameter key="absolute_error" value="false"/>
+            <parameter key="relative_error" value="false"/>
+            <parameter key="relative_error_lenient" value="false"/>
+            <parameter key="relative_error_strict" value="false"/>
+            <parameter key="normalized_absolute_error" value="false"/>
+            <parameter key="root_mean_squared_error" value="false"/>
+            <parameter key="root_relative_squared_error" value="false"/>
+            <parameter key="squared_error" value="false"/>
+            <parameter key="correlation" value="false"/>
+            <parameter key="squared_correlation" value="false"/>
+            <parameter key="cross-entropy" value="false"/>
+            <parameter key="margin" value="false"/>
+            <parameter key="soft_margin_loss" value="false"/>
+            <parameter key="logistic_loss" value="false"/>
+            <parameter key="skip_undefined_labels" value="true"/>
+            <parameter key="use_example_weights" value="true"/>
+            <list key="class_weights"/>
+          </operator>
+          <connect from_port="model" to_op="Apply Model" to_port="model"/>
+          <connect from_port="test set" to_op="Write CSV (3)" to_port="input"/>
+          <connect from_op="Write CSV (3)" from_port="file" to_op="Write File (4)" to_port="file"/>
+          <connect from_op="Write File (4)" from_port="file" to_op="Execute Python (3)" to_port="input 1"/>
+          <connect from_op="Execute Python (3)" from_port="output 1" to_op="Write CSV (6)" to_port="input"/>
+          <connect from_op="Write CSV (6)" from_port="file" to_op="Write File (5)" to_port="file"/>
+          <connect from_op="Write File (5)" from_port="file" to_op="Read CSV (3)" to_port="file"/>
+          <connect from_op="Read CSV (3)" from_port="output" to_op="Set Role (2)" to_port="example set input"/>
+          <connect from_op="Set Role (2)" from_port="example set output" to_op="Apply Model" to_port="unlabelled data"/>
+          <connect from_op="Apply Model" from_port="labelled data" to_op="Multiply" to_port="input"/>
+          <connect from_op="Multiply" from_port="output 1" to_op="Performance" to_port="labelled data"/>
+          <connect from_op="Multiply" from_port="output 2" to_op="Execute Python (4)" to_port="input 1"/>
+          <connect from_op="Performance" from_port="performance" to_port="performance 1"/>
+          <connect from_op="Performance" from_port="example set" to_port="test set results"/>
+          <portSpacing port="source_model" spacing="0"/>
+          <portSpacing port="source_test set" spacing="0"/>
+          <portSpacing port="source_through 1" spacing="0"/>
+          <portSpacing port="sink_test set results" spacing="0"/>
+          <portSpacing port="sink_performance 1" spacing="0"/>
+          <portSpacing port="sink_performance 2" spacing="0"/>
+        </process>
+      </operator>
+      <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV" width="90" x="581" y="136">
+        <parameter key="column_separator" value=","/>
+        <parameter key="write_attribute_names" value="true"/>
+        <parameter key="quote_nominal_values" value="true"/>
+        <parameter key="format_date_attributes" value="true"/>
+        <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+        <parameter key="append_to_file" value="false"/>
+        <parameter key="encoding" value="SYSTEM"/>
+      </operator>
+      <operator activated="true" class="write_file" compatibility="12.0.001" expanded="true" height="68" name="Write File (7)" width="90" x="715" y="136">
+        <parameter key="resource_type" value="file"/>
+        <parameter key="filename" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/TempfilesAndOutput/predictions_output.csv"/>
+        <parameter key="mime_type" value="application/octet-stream"/>
+      </operator>
+      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Execute Python (5)" width="90" x="849" y="136">
+        <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+        <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/Python-Scripts/CalculateMetrics.py"/>
+        <parameter key="notebook_cell_tag_filter" value=""/>
+        <parameter key="use_default_python" value="true"/>
+        <parameter key="package_manager" value="conda (anaconda)"/>
+        <parameter key="use_macros" value="false"/>
+      </operator>
+      <connect from_op="Read CSV" from_port="output" to_op="Set Role (3)" to_port="example set input"/>
+      <connect from_op="Set Role (3)" from_port="example set output" to_op="Cross Validation" to_port="example set"/>
+      <connect from_op="Cross Validation" from_port="model" to_port="result 1"/>
+      <connect from_op="Cross Validation" from_port="test result set" to_op="Write CSV" to_port="input"/>
+      <connect from_op="Cross Validation" from_port="performance 1" to_port="result 2"/>
+      <connect from_op="Write CSV" from_port="file" to_op="Write File (7)" to_port="file"/>
+      <connect from_op="Write File (7)" from_port="file" to_op="Execute Python (5)" to_port="input 1"/>
+      <portSpacing port="source_input 1" spacing="0"/>
+      <portSpacing port="sink_result 1" spacing="0"/>
+      <portSpacing port="sink_result 2" spacing="0"/>
+      <portSpacing port="sink_result 3" spacing="0"/>
+    </process>
+  </operator>
+</process>
