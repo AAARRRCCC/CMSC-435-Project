@@ -1,7 +1,10 @@
 Ryan
     generalize pipeline to not have hardcoded file paths
     automated email to kurgan on every run
+    add rm_main() to automate pfeature
     
 Eli
     discretization algorithm
     modify CalculateMatrix.py output confusion matrix
+    adding rm_main() to SplitData.py
+        might need to split into 2 scripts to cut labels off and reconnect later
