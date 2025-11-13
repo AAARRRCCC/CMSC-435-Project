@@ -30,6 +30,10 @@ def createSequencingCSV(dataFrame: pd.DataFrame, sequenceOutput):
             f.write(f">seq_{i}\n")
             f.write(f"{rowData}\n")
 
+def rm_main(dataFilePath, labelsOutputFilePath, pfeatureOutputFilePath):
+    unlabeledTrainingData, _ = removeLabels(dataFilePath, labelsOutputFilePath)
+    createSequencingCSV(unlabeledTrainingData, pfeatureOutputFilePath)
+
 if __name__ == "__main__":
     # Remove labels
     unlabeledTrainingData, _ = removeLabels("Dataset/StartingData.txt", "DataSet/Unfinished/trainingLabels.csv")
