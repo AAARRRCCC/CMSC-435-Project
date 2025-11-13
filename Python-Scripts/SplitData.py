@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 # Get random split depending on trainingPercent
 def splitData(fileName, trainingOutput, testingOutput, trainingPercent):
@@ -30,9 +31,15 @@ def createSequencingCSV(dataFrame: pd.DataFrame, sequenceOutput):
             f.write(f">seq_{i}\n")
             f.write(f"{rowData}\n")
 
-def rm_main(dataFilePath, labelsOutputFilePath, pfeatureOutputFilePath):
+def rm_main(dataFilePath: str):
+    dataFilePathFolder = os.path.dirname(dataFilePath)
+    labelsOutputFilePath = dataFilePathFolder + "/Unfinished/trainingLabels.csv"
+    pfeatureOutputFilePath = dataFilePathFolder + "/Unfinished/pfeatureSequenced.fa"
+
     unlabeledTrainingData, _ = removeLabels(dataFilePath, labelsOutputFilePath)
     createSequencingCSV(unlabeledTrainingData, pfeatureOutputFilePath)
+
+    return labelsOutputFilePath, pfeatureOutputFilePath
 
 if __name__ == "__main__":
     # Remove labels

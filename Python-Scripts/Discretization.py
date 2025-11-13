@@ -10,7 +10,6 @@ def get_splits_to_consider(col, lowerBound, upperBound, labels):
 
     pass
 
-
 # Any value in interval splits should include index and higher
 def calculate_score(col, intervalSplits):
     sum = 0
