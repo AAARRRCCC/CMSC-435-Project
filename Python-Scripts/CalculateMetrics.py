@@ -4,13 +4,13 @@ from pandas import DataFrame as df
 from predictions_to_confusion import getConfusionDF
 
 def getSpecificity(TN: int, FP: int) -> float:
-    return TN / (TN + FP) if (TN + FP) != 0 else 0.0
+    return (100 * TN) / (TN + FP) if (TN + FP) != 0 else 0.0
 
 def getSensitivity(TP: int, FN: int) -> float:
-    return TP / (TP + FN) if (TP + FN) != 0 else 0.0
+    return (100 * TP) / (TP + FN) if (TP + FN) != 0 else 0.0
 
 def getAccuracy(TP: int, TN: int, FP: int, FN: int) -> float:
-    return (TP + TN) / (TP + TN + FP + FN) if (TP + TN + FP + FN) != 0 else 0.0
+    return (100 * (TP + TN)) / (TP + TN + FP + FN) if (TP + TN + FP + FN) != 0 else 0.0
 
 def getMCC(TP: int, TN: int, FP: int, FN: int) -> float:
     bottom = math.sqrt((TP + FP) * (TP + FN) * (TN + FN) * (TN + FP))
@@ -42,8 +42,8 @@ def main(data: pd.DataFrame):
 
         results.append({
             "Label": label,
-            "Specificity": specificity,
             "Sensitivity": sensitivity,
+            "Specificity": specificity,
             "Accuracy": accuracy,
             "MCC": mcc
         })
