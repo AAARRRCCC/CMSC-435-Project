@@ -36,3 +36,7 @@ Thumbs.db
 *.model
 *.joblib
 *.pkl
+
+*.csv
+TempfilesAndOutput/
+TempfilesAndOutput/rapidminer_working_process.csv
