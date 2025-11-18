@@ -19,6 +19,9 @@ def getMCC(TP: int, TN: int, FP: int, FN: int) -> float:
     top = (TN * TP) - (FN * FP)
     return top / bottom
 
+def getConfusionMatrix(df: pd.DataFrame):
+    return df.to_string()
+
 def main(data: pd.DataFrame):
     rows, cols = data.shape
 
@@ -48,12 +51,13 @@ def main(data: pd.DataFrame):
             "MCC": mcc
         })
 
-    return results
+    confusionMatrix = getConfusionMatrix(data)
+    return results, confusionMatrix
 
 def rm_main(filepath):
     dataDF = getConfusionDF(filepath)
 
-    results = main(dataDF)
+    results, confusionMatrix = main(dataDF)
 
     with open("../TempfilesAndOutput/metrics_output.txt", "w") as f:
         for result in results:
@@ -64,6 +68,7 @@ def rm_main(filepath):
                 f"\tAccuracy: {result['Accuracy']:.3f}\n"
                 f"\tMCC: {result['MCC']:.3f}\n"
             )
+        f.write(f"\n{confusionMatrix}")
 
 if __name__ == "__main__":
     filepath = "../Dataset/rapidminer_results.csv"
