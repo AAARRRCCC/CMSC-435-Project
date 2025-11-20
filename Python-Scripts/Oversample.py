@@ -25,7 +25,7 @@ def main():
 
 def rm_main(df):
 
-    df = df.clone()
+    df = df.copy()
     x = df.drop('class', axis=1)
     y = df['class']
     

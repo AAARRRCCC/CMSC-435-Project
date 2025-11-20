@@ -31,15 +31,18 @@ def createSequencingCSV(dataFrame: pd.DataFrame, sequenceOutput):
             f.write(f">seq_{i}\n")
             f.write(f"{rowData}\n")
 
-def rm_main(dataFilePath: str):
+
+
+
+def rm_main(dataFilePath: str = "C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Dataset/StartingData.txt"):
     dataFilePathFolder = os.path.dirname(dataFilePath)
     labelsOutputFilePath = dataFilePathFolder + "/Unfinished/trainingLabels.csv"
     pfeatureOutputFilePath = dataFilePathFolder + "/Unfinished/pfeatureSequenced.fa"
 
     unlabeledTrainingData, _ = removeLabels(dataFilePath, labelsOutputFilePath)
     createSequencingCSV(unlabeledTrainingData, pfeatureOutputFilePath)
-
-    return labelsOutputFilePath, pfeatureOutputFilePath
+    
+    return pfeatureOutputFilePath, labelsOutputFilePath
 
 if __name__ == "__main__":
     # Remove labels
@@ -47,3 +50,8 @@ if __name__ == "__main__":
 
     # Create sequencing file
     createSequencingCSV(unlabeledTrainingData, "DataSet/Unfinished/RYAN_FILE.fa")
+
+
+
+    
+

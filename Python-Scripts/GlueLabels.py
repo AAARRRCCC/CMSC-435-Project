@@ -1,8 +1,9 @@
 import pandas as pd
 
 # Append labels to formatted data
-def appendLabelsToData(dataFile, labelFile, outputFile):
-    data = pd.read_csv(dataFile)
+def appendLabelsToData(dataFile, labelFile):
+    outputFile = labelFile.replace("trainingLabels.csv", "labeledData.csv")
+    data = dataFile
     labels = pd.read_csv(labelFile, header=None, names=['class'])
 
     if len(data) != len(labels):
@@ -11,10 +12,11 @@ def appendLabelsToData(dataFile, labelFile, outputFile):
     labels.columns = ['class']
     data['class'] = labels['class'].values
     data.to_csv(outputFile, index=False)
+    return data
 
-def rm_main(pfeatureResultFilePath, labelsFilePath, outputFilePath):
-    appendLabelsToData(pfeatureResultFilePath, labelsFilePath, outputFilePath)
-
+def rm_main(data_df, labelsFilePath):
+    df = appendLabelsToData(data_df, labelsFilePath)
+    return df
 if __name__ == "__main__":
     # # Glue labels back on
     # # PLEASE put pfeature training file after making it into number in the unfinished folder
