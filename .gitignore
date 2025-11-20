@@ -28,6 +28,7 @@ env/
 *.swp
 *.swo
 
+
 # OS
 .DS_Store
 Thumbs.db
@@ -37,6 +38,4 @@ Thumbs.db
 *.joblib
 *.pkl
 
-*.csv
-TempfilesAndOutput/
-TempfilesAndOutput/rapidminer_working_process.csv
+

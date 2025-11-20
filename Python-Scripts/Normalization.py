@@ -18,7 +18,7 @@ def normalize(input_path):
     return df
 
 def rm_main(df):
-    df = df.clone()
+    df = df.copy()
     #df = pd.read_csv('../Dataset/Unfinished/pfeature_with_labels.csv')
 
 

@@ -1,20 +1,26 @@
 Label: nonDRNA
-	Specificity: 0.471
-	Sensitivity: 0.959
-	Accuracy: 0.885
-	MCC: 0.503
+	Specificity: 77.401
+	Sensitivity: 90.728
+	Accuracy: 90.459
+	MCC: 0.310
 Label: RNA
-	Specificity: 0.981
-	Sensitivity: 0.404
-	Accuracy: 0.920
-	MCC: 0.499
+	Specificity: 95.056
+	Sensitivity: 69.343
+	Accuracy: 94.655
+	MCC: 0.337
 Label: DNA
-	Specificity: 0.973
-	Sensitivity: 0.413
-	Accuracy: 0.947
-	MCC: 0.394
+	Specificity: 95.865
+	Sensitivity: 72.500
+	Accuracy: 95.758
+	MCC: 0.223
 Label: DRNA
-	Specificity: 0.998
-	Sensitivity: 0.375
-	Accuracy: 0.997
-	MCC: 0.318
+	Specificity: 99.750
+	Sensitivity: 0.000
+	Accuracy: 99.750
+	MCC: 0.000
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7818  427  350    22
+RNA           30   95   12     0
+DNA           10    1   29     0
+DRNA           0    0    0     0
