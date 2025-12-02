@@ -16,6 +16,7 @@ def appendLabelsToData(dataFile, labelFile):
 
 def rm_main(data_df, labelsFilePath):
     df = appendLabelsToData(data_df, labelsFilePath)
+    df.to_csv("AAC-DPC-PAAC-RRI-ACR-PCP-AAIAfterPfeature.csv",index=False)
     return df
 if __name__ == "__main__":
     # # Glue labels back on

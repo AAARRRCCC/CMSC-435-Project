@@ -2,13 +2,37 @@ import subprocess
 import os
 import pandas as pd
 
+# Configure which pfeature jobs to run - add or remove methods as needed
+PFEATURE_JOBS = ['aac',
+                 'dpc',
+                'paac',
+                'rri'              
+                ]
+
 def rm_main(pfeatureinputfilepath):
     output_dir = os.path.dirname(pfeatureinputfilepath)
     pfeatureoutputfilepath = output_dir + "/pfeature_result.csv"
-    
-    subprocess.run("python pfeature_comp.py -i ../Dataset/Unfinished/pfeatureSequenced.fa -o CSVTEMP.csv -j TPC")
-    df = pd.read_csv("CSVTEMP.csv")
-    return df
+
+    # Run each pfeature job and collect results
+    feature_dfs = []
+    for job in PFEATURE_JOBS:
+        temp_output = f"CSVTEMP_{job}.csv"
+
+        # Run pfeature exactly like the original - with hardcoded input path
+        subprocess.run(f"python pfeature_comp.py -i ../Dataset/Unfinished/pfeatureSequenced.fa -o {temp_output} -j {job}", shell=True)
+
+        df_job = pd.read_csv(temp_output)
+        feature_dfs.append(df_job)
+
+    # Combine all feature sets horizontally (concatenate columns)
+    # First dataframe includes the sequence identifiers, others just add features
+    combined_df = feature_dfs[0]
+    for df in feature_dfs[1:]:
+        # Drop any duplicate identifier columns and merge on index
+        feature_cols = [col for col in df.columns if not col.startswith('seq_')]
+        combined_df = pd.concat([combined_df, df[feature_cols]], axis=1)
+
+    return combined_df
 
 if __name__ == "__main__":
     input_path = "..Dataset/Unfinished/pfeatureSequenced.fa"

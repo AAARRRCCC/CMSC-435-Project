@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?><process version="12.0.001">
+  <context>
+    <input/>
+    <output/>
+    <macros/>
+  </context>
+  <operator activated="true" class="process" compatibility="12.0.001" expanded="true" name="Process">
+    <parameter key="logverbosity" value="init"/>
+    <parameter key="resultfile" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/pipeline_resultfile.res"/>
+    <parameter key="random_seed" value="2001"/>
+    <parameter key="send_mail" value="never"/>
+    <parameter key="notification_email" value=""/>
+    <parameter key="process_duration_for_mail" value="30"/>
+    <parameter key="encoding" value="SYSTEM"/>
+    <process expanded="true">
+      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Split Data from Starting" width="90" x="45" y="136">
+        <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+        <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/SplitData.py"/>
+        <parameter key="notebook_cell_tag_filter" value=""/>
+        <parameter key="use_default_python" value="true"/>
+        <parameter key="package_manager" value="conda (anaconda)"/>
+        <parameter key="use_macros" value="false"/>
+      </operator>
+      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="runPFeature" width="90" x="179" y="34">
+        <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+        <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/pfeature_standalone/runPFeature.py"/>
+        <parameter key="notebook_cell_tag_filter" value=""/>
+        <parameter key="use_default_python" value="true"/>
+        <parameter key="package_manager" value="conda (anaconda)"/>
+        <parameter key="use_macros" value="false"/>
+      </operator>
+      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="124" name="Glue Labels" width="90" x="313" y="85">
+        <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+        <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/GlueLabels.py"/>
+        <parameter key="notebook_cell_tag_filter" value=""/>
+        <parameter key="use_default_python" value="true"/>
+        <parameter key="package_manager" value="conda (anaconda)"/>
+        <parameter key="use_macros" value="false"/>
+      </operator>
+      <operator activated="true" class="blending:set_role" compatibility="12.0.001" expanded="true" height="82" name="Set Role (3)" width="90" x="447" y="34">
+        <list key="set_roles">
+          <parameter key="class" value="label"/>
+        </list>
+      </operator>
+      <operator activated="true" class="concurrency:cross_validation" compatibility="12.0.001" expanded="true" height="145" name="Cross Validation" width="90" x="581" y="34">
+        <parameter key="split_on_batch_attribute" value="false"/>
+        <parameter key="leave_one_out" value="false"/>
+        <parameter key="number_of_folds" value="5"/>
+        <parameter key="sampling_type" value="stratified sampling"/>
+        <parameter key="use_local_random_seed" value="false"/>
+        <parameter key="local_random_seed" value="1992"/>
+        <parameter key="enable_parallel_execution" value="false"/>
+        <process expanded="true">
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Normalization (2)" width="90" x="179" y="34">
+            <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/Normalization_Train.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Discretization" width="90" x="313" y="34">
+            <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/Discretization.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Oversample" width="90" x="447" y="34">
+            <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/Oversample.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="false" class="discretize_by_bins" compatibility="12.0.001" expanded="true" height="103" name="Discretize" width="90" x="581" y="136">
+            <parameter key="return_preprocessing_model" value="false"/>
+            <parameter key="attribute_filter_type" value="all"/>
+            <parameter key="attribute" value=""/>
+            <parameter key="attributes" value=""/>
+            <parameter key="use_except_expression" value="false"/>
+            <parameter key="value_type" value="numeric"/>
+            <parameter key="use_value_type_exception" value="false"/>
+            <parameter key="except_value_type" value="real"/>
+            <parameter key="block_type" value="value_series"/>
+            <parameter key="use_block_type_exception" value="false"/>
+            <parameter key="except_block_type" value="value_series_end"/>
+            <parameter key="invert_selection" value="false"/>
+            <parameter key="include_special_attributes" value="false"/>
+            <parameter key="number_of_bins" value="4"/>
+            <parameter key="define_boundaries" value="false"/>
+            <parameter key="range_name_type" value="long"/>
+            <parameter key="automatic_number_of_digits" value="true"/>
+            <parameter key="number_of_digits" value="3"/>
+          </operator>
+          <operator activated="true" class="blending:set_role" compatibility="12.0.001" expanded="true" height="82" name="Set Role" width="90" x="715" y="34">
+            <list key="set_roles">
+              <parameter key="class" value="label"/>
+            </list>
+          </operator>
+          <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV (3)" width="90" x="849" y="34">
+            <parameter key="csv_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/TempfilesAndOutput/debug after oversample.csv"/>
+            <parameter key="column_separator" value=","/>
+            <parameter key="write_attribute_names" value="true"/>
+            <parameter key="quote_nominal_values" value="true"/>
+            <parameter key="format_date_attributes" value="true"/>
+            <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+            <parameter key="append_to_file" value="false"/>
+            <parameter key="encoding" value="SYSTEM"/>
+          </operator>
+          <operator activated="true" class="concurrency:parallel_random_forest" compatibility="12.0.001" expanded="true" height="103" name="Random Forest" width="90" x="983" y="34">
+            <parameter key="number_of_trees" value="50"/>
+            <parameter key="criterion" value="gain_ratio"/>
+            <parameter key="maximal_depth" value="40"/>
+            <parameter key="apply_pruning" value="false"/>
+            <parameter key="confidence" value="0.1"/>
+            <parameter key="apply_prepruning" value="false"/>
+            <parameter key="minimal_gain" value="0.01"/>
+            <parameter key="minimal_leaf_size" value="2"/>
+            <parameter key="minimal_size_for_split" value="4"/>
+            <parameter key="number_of_prepruning_alternatives" value="3"/>
+            <parameter key="random_splits" value="false"/>
+            <parameter key="guess_subset_ratio" value="true"/>
+            <parameter key="subset_ratio" value="0.2"/>
+            <parameter key="voting_strategy" value="confidence vote"/>
+            <parameter key="use_local_random_seed" value="false"/>
+            <parameter key="local_random_seed" value="1992"/>
+            <parameter key="enable_parallel_execution" value="true"/>
+          </operator>
+          <operator activated="false" class="h2o:gradient_boosted_trees" compatibility="11.0.002" expanded="true" height="103" name="Gradient Boosted Trees" width="90" x="715" y="187">
+            <parameter key="number_of_trees" value="50"/>
+            <parameter key="reproducible" value="false"/>
+            <parameter key="maximum_number_of_threads" value="4"/>
+            <parameter key="use_local_random_seed" value="false"/>
+            <parameter key="local_random_seed" value="1992"/>
+            <parameter key="maximal_depth" value="5"/>
+            <parameter key="min_rows" value="10.0"/>
+            <parameter key="min_split_improvement" value="1.0E-5"/>
+            <parameter key="number_of_bins" value="4"/>
+            <parameter key="learning_rate" value="0.01"/>
+            <parameter key="sample_rate" value="1.0"/>
+            <parameter key="distribution" value="AUTO"/>
+            <parameter key="early_stopping" value="false"/>
+            <parameter key="stopping_rounds" value="1"/>
+            <parameter key="stopping_metric" value="AUTO"/>
+            <parameter key="stopping_tolerance" value="0.001"/>
+            <list key="monotone_constraints"/>
+            <parameter key="max_runtime_seconds" value="0"/>
+            <list key="expert_parameters"/>
+          </operator>
+          <operator activated="false" class="id3" compatibility="12.0.001" expanded="true" height="82" name="ID3" width="90" x="849" y="187">
+            <parameter key="criterion" value="gain_ratio"/>
+            <parameter key="minimal_size_for_split" value="4"/>
+            <parameter key="minimal_leaf_size" value="2"/>
+            <parameter key="minimal_gain" value="0.01"/>
+          </operator>
+          <operator activated="false" class="concurrency:parallel_decision_tree" compatibility="12.0.001" expanded="true" height="103" name="Decision Tree" width="90" x="916" y="289">
+            <parameter key="criterion" value="gain_ratio"/>
+            <parameter key="maximal_depth" value="10"/>
+            <parameter key="apply_pruning" value="true"/>
+            <parameter key="confidence" value="0.1"/>
+            <parameter key="apply_prepruning" value="true"/>
+            <parameter key="minimal_gain" value="0.01"/>
+            <parameter key="minimal_leaf_size" value="2"/>
+            <parameter key="minimal_size_for_split" value="4"/>
+            <parameter key="number_of_prepruning_alternatives" value="3"/>
+          </operator>
+          <connect from_port="training set" to_op="Normalization (2)" to_port="input 1"/>
+          <connect from_op="Normalization (2)" from_port="output 1" to_op="Discretization" to_port="input 1"/>
+          <connect from_op="Discretization" from_port="output 1" to_op="Oversample" to_port="input 1"/>
+          <connect from_op="Oversample" from_port="output 1" to_op="Set Role" to_port="example set input"/>
+          <connect from_op="Set Role" from_port="example set output" to_op="Write CSV (3)" to_port="input"/>
+          <connect from_op="Write CSV (3)" from_port="through" to_op="Random Forest" to_port="training set"/>
+          <connect from_op="Random Forest" from_port="model" to_port="model"/>
+          <portSpacing port="source_training set" spacing="0"/>
+          <portSpacing port="sink_model" spacing="0"/>
+          <portSpacing port="sink_through 1" spacing="0"/>
+        </process>
+        <process expanded="true">
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Normalization" width="90" x="45" y="85">
+            <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/Normalization_Test.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Discretization (2)" width="90" x="179" y="85">
+            <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/Discretization.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="false" class="discretize_by_bins" compatibility="12.0.001" expanded="true" height="103" name="Discretize (2)" width="90" x="313" y="187">
+            <parameter key="return_preprocessing_model" value="false"/>
+            <parameter key="attribute_filter_type" value="all"/>
+            <parameter key="attribute" value=""/>
+            <parameter key="attributes" value=""/>
+            <parameter key="use_except_expression" value="false"/>
+            <parameter key="value_type" value="numeric"/>
+            <parameter key="use_value_type_exception" value="false"/>
+            <parameter key="except_value_type" value="real"/>
+            <parameter key="block_type" value="value_series"/>
+            <parameter key="use_block_type_exception" value="false"/>
+            <parameter key="except_block_type" value="value_series_end"/>
+            <parameter key="invert_selection" value="false"/>
+            <parameter key="include_special_attributes" value="false"/>
+            <parameter key="number_of_bins" value="4"/>
+            <parameter key="define_boundaries" value="false"/>
+            <parameter key="range_name_type" value="long"/>
+            <parameter key="automatic_number_of_digits" value="true"/>
+            <parameter key="number_of_digits" value="3"/>
+          </operator>
+          <operator activated="true" class="blending:set_role" compatibility="12.0.001" expanded="true" height="82" name="Set Role (2)" width="90" x="447" y="85">
+            <list key="set_roles">
+              <parameter key="class" value="label"/>
+            </list>
+          </operator>
+          <operator activated="true" class="apply_model" compatibility="12.0.001" expanded="true" height="82" name="Apply Model" width="90" x="581" y="34">
+            <list key="application_parameters"/>
+          </operator>
+          <operator activated="true" class="multiply" compatibility="12.0.001" expanded="true" height="103" name="Multiply" width="90" x="715" y="34"/>
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Execute Python (4)" width="90" x="849" y="136">
+            <parameter key="script" value="import os&#10;import pandas as pd&#10;&#10;def rm_main(data):&#10;    path = r&quot;/path/to/predictions.csv&quot;&#10;    header = not os.path.exists(path)&#10;    data.to_csv(path, mode='a', header=header, index=False)&#10;    return data"/>
+            <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/DataToCSV.py"/>
+            <parameter key="notebook_cell_tag_filter" value=""/>
+            <parameter key="use_default_python" value="true"/>
+            <parameter key="package_manager" value="conda (anaconda)"/>
+            <parameter key="use_macros" value="false"/>
+          </operator>
+          <operator activated="true" class="performance_classification" compatibility="12.0.001" expanded="true" height="82" name="Performance" width="90" x="849" y="34">
+            <parameter key="main_criterion" value="first"/>
+            <parameter key="accuracy" value="true"/>
+            <parameter key="classification_error" value="false"/>
+            <parameter key="kappa" value="true"/>
+            <parameter key="weighted_mean_recall" value="false"/>
+            <parameter key="weighted_mean_precision" value="false"/>
+            <parameter key="spearman_rho" value="false"/>
+            <parameter key="kendall_tau" value="false"/>
+            <parameter key="absolute_error" value="false"/>
+            <parameter key="relative_error" value="false"/>
+            <parameter key="relative_error_lenient" value="false"/>
+            <parameter key="relative_error_strict" value="false"/>
+            <parameter key="normalized_absolute_error" value="false"/>
+            <parameter key="root_mean_squared_error" value="false"/>
+            <parameter key="root_relative_squared_error" value="false"/>
+            <parameter key="squared_error" value="false"/>
+            <parameter key="correlation" value="false"/>
+            <parameter key="squared_correlation" value="false"/>
+            <parameter key="cross-entropy" value="false"/>
+            <parameter key="margin" value="false"/>
+            <parameter key="soft_margin_loss" value="false"/>
+            <parameter key="logistic_loss" value="false"/>
+            <parameter key="skip_undefined_labels" value="true"/>
+            <parameter key="use_example_weights" value="true"/>
+            <list key="class_weights"/>
+          </operator>
+          <connect from_port="model" to_op="Apply Model" to_port="model"/>
+          <connect from_port="test set" to_op="Normalization" to_port="input 1"/>
+          <connect from_op="Normalization" from_port="output 1" to_op="Discretization (2)" to_port="input 1"/>
+          <connect from_op="Discretization (2)" from_port="output 1" to_op="Set Role (2)" to_port="example set input"/>
+          <connect from_op="Set Role (2)" from_port="example set output" to_op="Apply Model" to_port="unlabelled data"/>
+          <connect from_op="Apply Model" from_port="labelled data" to_op="Multiply" to_port="input"/>
+          <connect from_op="Multiply" from_port="output 1" to_op="Performance" to_port="labelled data"/>
+          <connect from_op="Multiply" from_port="output 2" to_op="Execute Python (4)" to_port="input 1"/>
+          <connect from_op="Performance" from_port="performance" to_port="performance 1"/>
+          <connect from_op="Performance" from_port="example set" to_port="test set results"/>
+          <portSpacing port="source_model" spacing="0"/>
+          <portSpacing port="source_test set" spacing="0"/>
+          <portSpacing port="source_through 1" spacing="0"/>
+          <portSpacing port="sink_test set results" spacing="0"/>
+          <portSpacing port="sink_performance 1" spacing="0"/>
+          <portSpacing port="sink_performance 2" spacing="0"/>
+        </process>
+      </operator>
+      <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV" width="90" x="715" y="136">
+        <parameter key="column_separator" value=","/>
+        <parameter key="write_attribute_names" value="true"/>
+        <parameter key="quote_nominal_values" value="true"/>
+        <parameter key="format_date_attributes" value="true"/>
+        <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+        <parameter key="append_to_file" value="false"/>
+        <parameter key="encoding" value="SYSTEM"/>
+      </operator>
+      <operator activated="true" class="write_file" compatibility="12.0.001" expanded="true" height="68" name="Write File (7)" width="90" x="849" y="187">
+        <parameter key="resource_type" value="file"/>
+        <parameter key="filename" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/TempfilesAndOutput/predictions_output.csv"/>
+        <parameter key="mime_type" value="application/octet-stream"/>
+      </operator>
+      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Calculate Metrics" width="90" x="983" y="85">
+        <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
+        <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/CalculateMetrics.py"/>
+        <parameter key="notebook_cell_tag_filter" value=""/>
+        <parameter key="use_default_python" value="true"/>
+        <parameter key="package_manager" value="conda (anaconda)"/>
+        <parameter key="use_macros" value="false"/>
+      </operator>
+      <connect from_op="Split Data from Starting" from_port="output 1" to_op="runPFeature" to_port="input 1"/>
+      <connect from_op="Split Data from Starting" from_port="output 2" to_op="Glue Labels" to_port="input 2"/>
+      <connect from_op="runPFeature" from_port="output 1" to_op="Glue Labels" to_port="input 1"/>
+      <connect from_op="Glue Labels" from_port="output 1" to_op="Set Role (3)" to_port="example set input"/>
+      <connect from_op="Set Role (3)" from_port="example set output" to_op="Cross Validation" to_port="example set"/>
+      <connect from_op="Cross Validation" from_port="model" to_port="result 1"/>
+      <connect from_op="Cross Validation" from_port="test result set" to_op="Write CSV" to_port="input"/>
+      <connect from_op="Cross Validation" from_port="performance 1" to_port="result 2"/>
+      <connect from_op="Write CSV" from_port="file" to_op="Write File (7)" to_port="file"/>
+      <connect from_op="Write File (7)" from_port="file" to_op="Calculate Metrics" to_port="input 1"/>
+      <portSpacing port="source_input 1" spacing="0"/>
+      <portSpacing port="sink_result 1" spacing="0"/>
+      <portSpacing port="sink_result 2" spacing="0"/>
+      <portSpacing port="sink_result 3" spacing="0"/>
+    </process>
+  </operator>
+</process>

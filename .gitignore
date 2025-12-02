@@ -39,3 +39,9 @@ Thumbs.db
 *.pkl
 
 
+pfeature_standalone/dff6d2c3-9bb2-44b3-978a-188acb6a82d1
+pfeature_standalone/*-*-*-*-*
+Dataset/full_normalized_BSMOTE.csv
+TempfilesAndOutput/predictions_output.csv
+TempfilesAndOutput/predictions_output.csv
+TempfilesAndOutput/predictions_output.csv

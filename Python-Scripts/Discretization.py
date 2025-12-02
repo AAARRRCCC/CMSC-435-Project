@@ -82,28 +82,57 @@ def find_candidates_in_interval(values: np.ndarray, labels: np.ndarray, start: i
     return abs_idxs
 
 
-def discretize_column_by_splits(original_col: pd.Series, values_sorted: np.ndarray, split_positions: List[int]) -> pd.Series:
+def discretize_column_by_splits(original_col: pd.Series,
+                                values_sorted: np.ndarray,
+                                split_positions: List[int]) -> pd.Series:
     """
-    Convert split_positions (indices into sorted values) to numeric thresholds and apply pd.cut to original column.
-    split_positions are positions p in sorted array such that split occurs between sorted[p-1] and sorted[p].
-    """
-    if len(split_positions) == 0:
-        # return original unchanged (but cast to category of single bin)
-        return original_col.astype('category')
+    Convert split_positions (indices into sorted values) to numeric thresholds,
+    then replace each value by the numeric center of its bin.
 
-    # compute thresholds as midpoints between sorted adjacent values at split positions
-    thresholds = []
+    Result: column remains purely numeric (float), so later normalization
+    can still work on these discretized features.
+    """
+    # If no splits were found, just return the original numeric column
+    if len(split_positions) == 0:
+        return original_col.astype(float)
+
+    # 1) Compute thresholds as midpoints between sorted adjacent values
+    thresholds: List[float] = []
     for p in sorted(split_positions):
         v_left = values_sorted[p - 1]
         v_right = values_sorted[p]
-        # midpoint (works for floats/ints). If strings or non-numeric, fallback behavior not expected.
         thr = (float(v_left) + float(v_right)) / 2.0
         thresholds.append(thr)
 
-    bins = [-np.inf] + thresholds + [np.inf]
-    labels = list(range(len(bins) - 1))
-    # Use pandas.cut on original series
-    return pd.cut(original_col, bins=bins, labels=labels)
+    # 2) We will use these thresholds as internal bin edges.
+    #    To get finite edges for the first and last bins, we look at the
+    #    actual min/max of the original column.
+    col_values = original_col.to_numpy(dtype=float)
+    col_min = np.nanmin(col_values)
+    col_max = np.nanmax(col_values)
+
+    # Edges for center computation: [left_edge_0, edge_1, ..., edge_k, right_edge_last]
+    # with internal edges = thresholds
+    edges = [col_min] + thresholds + [col_max]
+
+    # 3) Compute central value for each bin
+    #    Bin i has range [edges[i], edges[i+1]] -> center = (left + right)/2
+    centers = []
+    for left, right in zip(edges[:-1], edges[1:]):
+        centers.append((left + right) / 2.0)
+    centers = np.asarray(centers, dtype=float)
+
+    # 4) Assign each original value to a bin by thresholds
+    #    np.digitize returns bin index in [0, len(thresholds)] for each value.
+    #    thresholds are the internal edges between bins.
+    bin_indices = np.digitize(col_values, thresholds, right=False)
+
+    # Map bin index -> central value
+    new_values = centers[bin_indices]
+
+    # Return as a float Series with original index preserved
+    return pd.Series(new_values, index=original_col.index, dtype=float)
+
 
 
 def caim_discretize_for_column(values: np.ndarray, labels: np.ndarray,
@@ -205,7 +234,7 @@ def caim_discretize_for_column(values: np.ndarray, labels: np.ndarray,
     return split_positions
 
 
-def rm_main_optimized(df: pd.DataFrame,
+def rm_main(df: pd.DataFrame,
                       min_gain: float = 1e-6,
                       verbose: bool = True) -> pd.DataFrame:
     """
@@ -253,5 +282,5 @@ if __name__ == "__main__":
         sys.exit(1)
 
     path = sys.argv[1]
-    out_df = rm_main_optimized(path, min_gain=1e-6, verbose=True)
+    out_df = rm_main(path, min_gain=1e-6, verbose=True)
     print(out_df.head())
