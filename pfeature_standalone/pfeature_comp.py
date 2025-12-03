@@ -21,7 +21,26 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from argparse import RawTextHelpFormatter
 import uuid
 import warnings
-warnings.filterwarnings("ignore") 
+warnings.filterwarnings("ignore")
+
+# Helper function to safely remove files on Windows
+def safe_remove(filepath):
+    """Safely remove a file, retrying if it's locked by another process"""
+    import time
+    max_attempts = 5
+    for attempt in range(max_attempts):
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            return
+        except PermissionError:
+            if attempt < max_attempts - 1:
+                time.sleep(0.1)  # Wait 100ms before retrying
+            else:
+                pass  # Silently ignore if we can't delete after retries
+        except Exception:
+            pass  # Silently ignore other errors
+
 std = list("ACDEFGHIKLMNPQRSTVWY")
 PCP= pd.read_csv('Data/PhysicoChemical.csv', header=None)
 AAindices = 'Data/aaind.txt'
@@ -75,22 +94,65 @@ parser.add_argument("-t","-T","--pweight", type=float, help="Weighting factor fo
 parser.add_argument("--workers", type=int, help="Parallel workers for DPC/TPC; defaults to cpu_count()")
 args = parser.parse_args()
 
+# Optimized parallel AAC computation for a single sequence
+def _aac_vector_for_sequence(seq):
+    """Compute AAC features for a single sequence - parallelizable"""
+    s = str(seq).strip().upper()
+    L = len(s)
+    if L == 0:
+        return [0.0] * 20
+
+    # Count occurrences using Counter for efficiency
+    from collections import Counter
+    counts = Counter(s)
+
+    # Calculate composition for each amino acid in order
+    result = []
+    for aa in std:
+        composition = (counts.get(aa, 0) / L) * 100
+        result.append(round(composition, 2))
+
+    return result
+
 def aac_comp(file,out):
     filename, file_extension = os.path.splitext(file)
+
+    # Print progress to stderr
+    import sys as _sys
+    df = pd.read_csv(file, header = None)
+    seqs = list(df.iloc[:,0])
+    _sys.stderr.write(f"[AAC] Processing {len(seqs)} sequences...\n")
+    _sys.stderr.flush()
+
+    # Use parallel processing like DPC, PCP, and DDR
+    workers = args.workers if hasattr(args, 'workers') and args.workers else (cpu_count() or 1)
+
+    if workers and workers > 1:
+        _sys.stderr.write(f"[AAC] Using {workers} worker threads...\n")
+        _sys.stderr.flush()
+        results = [None] * len(seqs)
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            fut_to_idx = {ex.submit(_aac_vector_for_sequence, s): i for i, s in enumerate(seqs)}
+            for fut in tqdm(as_completed(fut_to_idx), total=len(seqs), desc="AAC: sequences", unit="seq", file=_sys.stderr):
+                i = fut_to_idx[fut]
+                results[i] = fut.result()
+    else:
+        # Single-threaded fallback
+        results = []
+        for s in tqdm(seqs, desc="AAC: sequences", unit="seq", file=_sys.stderr):
+            vec = _aac_vector_for_sequence(s)
+            results.append(vec)
+
+    _sys.stderr.write(f"[AAC] Completed processing {len(seqs)} sequences\n")
+    _sys.stderr.flush()
+
+    # Write results to file
     f = open(out, 'w')
     sys.stdout = f
-    df = pd.read_csv(file, header = None)
-    zz = df.iloc[:,0]
     print("AAC_A,AAC_C,AAC_D,AAC_E,AAC_F,AAC_G,AAC_H,AAC_I,AAC_K,AAC_L,AAC_M,AAC_N,AAC_P,AAC_Q,AAC_R,AAC_S,AAC_T,AAC_V,AAC_W,AAC_Y,")
-    for j in zz:
-        for i in std:
-            count = 0
-            for k in j:
-                temp1 = k
-                if temp1 == i:
-                    count += 1
-                composition = (count/len(j))*100
-            print("%.2f"%composition, end = ",")
+    for result_row in results:
+        for val in result_row:
+            print("%.2f"%val, end = ",")
         print("")
     f.truncate()
 	
@@ -115,7 +177,7 @@ def aac_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
     os.remove('sam_input.csv')
 
 	
@@ -252,7 +314,7 @@ def tpc_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
     os.remove('sam_input.csv')
 ###########################atom###############
 def atc(file,out):
@@ -605,50 +667,18 @@ PCP= pd.read_csv('Data/PhysicoChemical.csv', header=None)
 
 headers = ['PCP_PC','PCP_NC','PCP_NE','PCP_PO','PCP_NP','PCP_AL','PCP_CY','PCP_AR','PCP_AC','PCP_BS','PCP_NE_pH','PCP_HB','PCP_HL','PCP_NT','PCP_HX','PCP_SC','PCP_SS_HE','PCP_SS_ST','PCP_SS_CO','PCP_SA_BU','PCP_SA_EX','PCP_SA_IN','PCP_TN','PCP_SM','PCP_LR','PCP_Z1','PCP_Z2','PCP_Z3','PCP_Z4','PCP_Z5'];
 
+# Optimized amino acid encoding dictionary for faster lookups
+AA_ENCODE_DICT = {'A': 0, 'C': 1, 'D': 2, 'E': 3, 'F': 4, 'G': 5, 'H': 6, 'I': 7,
+                  'K': 8, 'L': 9, 'M': 10, 'N': 11, 'P': 12, 'Q': 13, 'R': 14,
+                  'S': 15, 'T': 16, 'V': 17, 'W': 18, 'Y': 19}
+
 def encode(peptide):
     l=len(peptide);
     encoded=np.zeros(l);
     for i in range(l):
-        if(peptide[i]=='A'):
-            encoded[i] = 0;
-        elif(peptide[i]=='C'):
-            encoded[i] = 1;
-        elif(peptide[i]=='D'):
-            encoded[i] = 2;
-        elif(peptide[i]=='E'):
-            encoded[i] = 3;
-        elif(peptide[i]=='F'):
-            encoded[i] = 4;
-        elif(peptide[i]=='G'):
-            encoded[i] = 5;
-        elif(peptide[i]=='H'):
-            encoded[i] = 6;
-        elif(peptide[i]=='I'):
-            encoded[i] = 7;
-        elif(peptide[i]=='K'):
-            encoded[i] = 8;
-        elif(peptide[i]=='L'):
-            encoded[i] = 9;
-        elif(peptide[i]=='M'):
-            encoded[i] = 10;
-        elif(peptide[i]=='N'):
-            encoded[i] = 11;
-        elif(peptide[i]=='P'):
-            encoded[i] = 12;
-        elif(peptide[i]=='Q'):
-            encoded[i] = 13;
-        elif(peptide[i]=='R'):
-            encoded[i] = 14;
-        elif(peptide[i]=='S'):
-            encoded[i] = 15;
-        elif(peptide[i]=='T'):
-            encoded[i] = 16;
-        elif(peptide[i]=='V'):
-            encoded[i] = 17;
-        elif(peptide[i]=='W'):
-            encoded[i] = 18;
-        elif(peptide[i]=='Y'):
-            encoded[i] = 19;
+        aa = peptide[i]
+        if aa in AA_ENCODE_DICT:
+            encoded[i] = AA_ENCODE_DICT[aa]
         else:
             print('Wrong residue!');
     return encoded;
@@ -661,6 +691,29 @@ def lookup(peptide,featureNum):
     for i in range(l):
         out[i] = PCP[peptide_num[i]][featureNum];
     return sum(out);
+
+# Optimized parallel PCP computation for a single sequence
+def _pcp_vector_for_sequence(seq):
+    """Compute PCP features for a single sequence - parallelizable"""
+    s = str(seq).strip().upper()
+    L = len(s)
+    if L == 0:
+        return [0.0] * PCP.shape[0]  # Return zeros instead of NaN for empty sequences
+
+    # Convert sequence to indices using dictionary - vectorized
+    seq_list = list(s)
+    encoded = np.array([AA_ENCODE_DICT.get(aa, 0) for aa in seq_list], dtype=np.int32)
+
+    # Compute all features at once using fully vectorized numpy operations
+    # PCP is shape (num_features, 20_amino_acids)
+    # We need to get all features for each encoded amino acid position
+    # PCP.values[:, encoded] gives us a matrix of shape (num_features, L)
+    pcp_matrix = PCP.values[:, encoded]  # Shape: (num_features, L)
+    feature_sums = np.sum(pcp_matrix, axis=1)  # Sum each feature row across sequence positions
+    result = np.round(feature_sums / L, 3)
+
+    return result.tolist()
+
 def pcp_1(file,out123):
 
     if(type(file) == str):
@@ -672,25 +725,36 @@ def pcp_1(file,out123):
         seq  = file;
 
     l = len(seq);
+    seqs = [seq[i].upper() for i in range(l)]
 
-    rows = PCP.shape[0]; # Number of features in our reference table
-    col = 20 ; # Denotes the 20 amino acids
+    # Print progress to stderr so it doesn't interfere with CSV output
+    import sys as _sys
+    _sys.stderr.write(f"[PCP] Processing {l} sequences...\n")
+    _sys.stderr.flush()
 
-    seq=[seq[i].upper() for i in range(l)]
-    sequenceFeature = [];
-    sequenceFeature.append(headers); #To put property name in output csv
+    # Use parallel processing like DPC
+    workers = args.workers if hasattr(args, 'workers') and args.workers else (cpu_count() or 1)
 
-    for i in range(l): # Loop to iterate over each sequence
-        nfeatures = rows;
-        sequenceFeatureTemp = [];
-        for j in range(nfeatures): #Loop to iterate over each feature
-            featureVal = lookup(seq[i],j)
-            if(len(seq[i])!=0):
-                sequenceFeatureTemp.append(round(featureVal/len(seq[i]),3));
-            else:
-                sequenceFeatureTemp.append('NaN')
+    sequenceFeature = [headers]  # Header row
 
-        sequenceFeature.append(sequenceFeatureTemp);
+    if workers and workers > 1:
+        _sys.stderr.write(f"[PCP] Using {workers} worker threads...\n")
+        _sys.stderr.flush()
+        results = [None] * len(seqs)
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            fut_to_idx = {ex.submit(_pcp_vector_for_sequence, s): i for i, s in enumerate(seqs)}
+            for fut in tqdm(as_completed(fut_to_idx), total=len(seqs), desc="PCP: sequences", unit="seq", file=_sys.stderr):
+                i = fut_to_idx[fut]
+                results[i] = fut.result()
+        sequenceFeature.extend(results)
+    else:
+        # Single-threaded fallback
+        for s in tqdm(seqs, desc="PCP: sequences", unit="seq", file=_sys.stderr):
+            vec = _pcp_vector_for_sequence(s)
+            sequenceFeature.append(vec)
+
+    _sys.stderr.write(f"[PCP] Completed processing {l} sequences\n")
+    _sys.stderr.flush()
 
     out = pd.DataFrame(sequenceFeature);
     file = open(out123,'w')
@@ -719,7 +783,7 @@ def pcp_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 ###############################RRI#################################
 def RAAC(file,out):
     filename, file_extension = os.path.splitext(file)
@@ -823,50 +887,15 @@ def RAAC_split(file,n,out):
 ##########################################PRI###########################
 PCP= pd.read_csv('Data/PhysicoChemical.csv', header=None) #Our reference table for properties
 headers_1 = ['PRI_PC','PRI_NC','PRI_NE','PRI_PO','PRI_NP','PRI_AL','PRI_CY','PRI_AR','PRI_AC','PRI_BS','PRI_NE_pH','PRI_HB','PRI_HL','PRI_NT','PRI_HX','PRI_SC','PRI_SS_HE','PRI_SS_ST','PRI_SS_CO','PRI_SA_BU','PRI_SA_EX','PRI_SA_IN','PRI_TN','PRI_SM','PRI_LR'];
+
+# Reuse the optimized dictionary defined earlier
 def encode(peptide):
     l=len(peptide);
     encoded=np.zeros(l);
     for i in range(l):
-        if(peptide[i]=='A'):
-            encoded[i] = 0;
-        elif(peptide[i]=='C'):
-            encoded[i] = 1;
-        elif(peptide[i]=='D'):
-            encoded[i] = 2;
-        elif(peptide[i]=='E'):
-            encoded[i] = 3;
-        elif(peptide[i]=='F'):
-            encoded[i] = 4;
-        elif(peptide[i]=='G'):
-            encoded[i] = 5;
-        elif(peptide[i]=='H'):
-            encoded[i] = 6;
-        elif(peptide[i]=='I'):
-            encoded[i] = 7;
-        elif(peptide[i]=='K'):
-            encoded[i] = 8;
-        elif(peptide[i]=='L'):
-            encoded[i] = 9;
-        elif(peptide[i]=='M'):
-            encoded[i] = 10;
-        elif(peptide[i]=='N'):
-            encoded[i] = 11;
-        elif(peptide[i]=='P'):
-            encoded[i] = 12;
-        elif(peptide[i]=='Q'):
-            encoded[i] = 13;
-        elif(peptide[i]=='R'):
-            encoded[i] = 14;
-        elif(peptide[i]=='S'):
-            encoded[i] = 15;
-        elif(peptide[i]=='T'):
-            encoded[i] = 16;
-        elif(peptide[i]=='V'):
-            encoded[i] = 17;
-        elif(peptide[i]=='W'):
-            encoded[i] = 18;
-        elif(peptide[i]=='Y'):
-            encoded[i] = 19;
+        aa = peptide[i]
+        if aa in AA_ENCODE_DICT:
+            encoded[i] = AA_ENCODE_DICT[aa]
         else:
             print(peptide[i], ' is a wrong residue!');
     return encoded;
@@ -962,35 +991,92 @@ def repeats_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 	
 #################################DDOR####################################
+# Optimized parallel DDR computation for a single sequence
+def _ddr_vector_for_sequence(seq):
+    """Compute DDR features for a single sequence - parallelizable"""
+    s = str(seq).strip().upper()
+    seq_len = len(s)
+
+    if seq_len == 0:
+        return [0.0] * 20  # Return zeros for all 20 amino acids
+
+    # Build position dictionary in single pass
+    aa_positions = {aa: [] for aa in std}
+    for pos, char in enumerate(s):
+        if char in aa_positions:
+            aa_positions[char].append(pos)
+
+    # Calculate DDR for each amino acid
+    result = []
+    for aa in std:
+        positions = aa_positions[aa]
+        if not positions:
+            result.append(0.0)
+            continue
+
+        # Calculate distances between consecutive occurrences
+        distances = []
+        for k in range(len(positions) - 1):
+            distances.append(positions[k+1] - positions[k] - 1)
+
+        # Add distance from start and to end
+        distances.insert(0, positions[0])
+        distances.append(seq_len - 1 - positions[-1])
+
+        # Calculate DDR metric
+        sum_distances = sum(distances) + 1
+        sum_squared = sum([d*d for d in distances])
+        ddr_value = sum_squared / sum_distances
+        result.append(round(ddr_value, 2))
+
+    return result
+
 def DDOR(file,out) :
     df = pd.read_csv(file, header = None)
     df1 = pd.DataFrame(df[0].str.upper())
+    seqs = list(df1[0])
+
+    # Print progress to stderr so it doesn't interfere with CSV output
+    import sys as _sys
+    _sys.stderr.write(f"[DDR] Processing {len(seqs)} sequences...\n")
+    _sys.stderr.flush()
+
+    # Use parallel processing like DPC and PCP
+    workers = args.workers if hasattr(args, 'workers') and args.workers else (cpu_count() or 1)
+
+    if workers and workers > 1:
+        _sys.stderr.write(f"[DDR] Using {workers} worker threads...\n")
+        _sys.stderr.flush()
+        results = [None] * len(seqs)
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            fut_to_idx = {ex.submit(_ddr_vector_for_sequence, s): i for i, s in enumerate(seqs)}
+            for fut in tqdm(as_completed(fut_to_idx), total=len(seqs), desc="DDR: sequences", unit="seq", file=_sys.stderr):
+                i = fut_to_idx[fut]
+                results[i] = fut.result()
+    else:
+        # Single-threaded fallback
+        results = []
+        for s in tqdm(seqs, desc="DDR: sequences", unit="seq", file=_sys.stderr):
+            vec = _ddr_vector_for_sequence(s)
+            results.append(vec)
+
+    _sys.stderr.write(f"[DDR] Completed processing {len(seqs)} sequences\n")
+    _sys.stderr.flush()
+
+    # Write results to file
     f = open(out,'w')
     sys.stdout = f
+    # Header
     for i in std:
         print('DDR_'+i, end=",")
     print("")
-    for i in range(0,len(df1)):
-        s = df1[0][i]
-        p = s[::-1]
-        for j in std:
-            zz = ([pos for pos, char in enumerate(s) if char == j])
-            pp = ([pos for pos, char in enumerate(p) if char == j])
-            ss = []
-            for i in range(0,(len(zz)-1)):
-                ss.append(zz[i+1] - zz[i]-1)
-            if zz == []:
-                ss = []
-            else:
-                ss.insert(0,zz[0])
-                ss.insert(len(ss),pp[0])
-            cc1=  (sum([e for e in ss])+1)
-            cc = sum([e*e for e in ss])
-            zz2 = cc/cc1
-            print("%.2f"%zz2,end=",")
+    # Data rows
+    for result_row in results:
+        for val in result_row:
+            print("%.2f"%val, end=",")
         print("")
     f.truncate()
 
@@ -1005,19 +1091,31 @@ def DDOR_split(file,v,out):
     print("")
     for i in range(0,len(df1)):
         s = df1[0][i]
-        p = s[::-1]
+        seq_len = len(s)
+
+        # Optimized: Build position dictionary in single pass instead of 40 scans
+        aa_positions = {aa: [] for aa in std}
+        for pos, char in enumerate(s):
+            if char in aa_positions:
+                aa_positions[char].append(pos)
+
+        # Calculate DDR for each amino acid using pre-computed positions
         for j in std:
-            zz = ([pos for pos, char in enumerate(s) if char == j])
-            pp = ([pos for pos, char in enumerate(p) if char == j])
+            zz = aa_positions[j]
+            if not zz:
+                print("%.2f"%0.0,end=",")
+                continue
+
+            # Calculate distances between consecutive occurrences
             ss = []
-            for i in range(0,(len(zz)-1)):
-                ss.append(zz[i+1] - zz[i]-1)
-            if zz == []:
-                ss = []
-            else:
-                ss.insert(0,zz[0])
-                ss.insert(len(ss),pp[0])
-            cc1=  (sum([e for e in ss])+1)
+            for k in range(len(zz)-1):
+                ss.append(zz[k+1] - zz[k] - 1)
+
+            # Add distance from start and to end
+            ss.insert(0, zz[0])
+            ss.append(seq_len - 1 - zz[-1])
+
+            cc1 = sum(ss) + 1
             cc = sum([e*e for e in ss])
             zz2 = cc/cc1
             print("%.2f"%zz2,end=",")
@@ -1039,7 +1137,7 @@ def DDOR_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 
 ########################Shannon_Entropy Whole protein######################################
 def entropy_single(seq):
@@ -1059,7 +1157,7 @@ def SE(filename,out):
         allowed = set(('A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y'))
         is_data_invalid = set(data1).issubset(allowed)
         if is_data_invalid==False:
-            print("Error: Please check for invalid inputs in the sequence.","\nError in: ","Sequence number=",i+1,",","Sequence = ",data[i],",","\nNOTE: Spaces, Special characters('[@_!#$%^&*()<>?/\|}{~:]') and Extra characters(BJOUXZ) should not be there.")
+            print("Error: Please check for invalid inputs in the sequence.","\nError in: ","Sequence number=",i+1,",","Sequence = ",data[i],",","\nNOTE: Spaces, Special characters('[@_!#$%^&*()<>?/\\|}{~:]') and Extra characters(BJOUXZ) should not be there.")
             return
         Val.append(round((entropy_single(str(data[i]))),3))
         #print(Val[i])
@@ -1087,7 +1185,7 @@ def SE_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 
 ################################Shannon_Entropy residue#############################################
 def SE_residue_level(filename,out):
@@ -1103,7 +1201,7 @@ def SE_residue_level(filename,out):
         allowed = set(('A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y'))
         is_data_invalid = set(data1).issubset(allowed)
         if is_data_invalid==False:
-            print("Error: Please check for invalid inputs in the sequence.","\nError in: ","Sequence number=",i+1,",","Sequence = ",data[i],",","\nNOTE: Spaces, Special characters('[@_!#$%^&*()<>?/\|}{~:]') and Extra characters(BJOUXZ) should not be there.")
+            print("Error: Please check for invalid inputs in the sequence.","\nError in: ","Sequence number=",i+1,",","Sequence = ",data[i],",","\nNOTE: Spaces, Special characters('[@_!#$%^&*()<>?/\\|}{~:]') and Extra characters(BJOUXZ) should not be there.")
             return
         seq=data[i]
         seq=seq.upper()
@@ -1140,7 +1238,7 @@ def SE_residue_level_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 
 #########################Shanon entropy for PCP#################################
 def lookup(peptide,featureNum):
@@ -1271,7 +1369,7 @@ def shannons_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')	
+    safe_remove('tempfile_out')	
 	
 ####################autocorr####################
 def p_aa(prop,a):
@@ -1364,7 +1462,7 @@ def autocorr_split(file,v,lg,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 
 ##################paac####################
 def val(AA_1, AA_2, aa, mat):
@@ -1432,7 +1530,7 @@ def paac_split(file,v,lg,out,w):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 	
 ######################apaac############################	
 def apaac_1(file,lambdaval,w=0.05):
@@ -1501,7 +1599,7 @@ def apaac_split(file,v,lg,out,w):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 ###################################qos#######################################
 def qos(file,gap,out,w=0.1):
     ff = []
@@ -1580,7 +1678,7 @@ def qos_split(file,v,lg,out,w):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 ##########################soc################
 def soc(file,gap,out):
     ff = []
@@ -1639,7 +1737,7 @@ def soc_split(file,v,lg,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 ##########################################CTC###################################
 x = [1, 2, 3, 4, 5, 6,7]
 p=[]
@@ -1690,7 +1788,7 @@ def CTC(filename,out):
         allowed = set(('A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y'))
         is_data_invalid = set(data1).issubset(allowed)
         if is_data_invalid==False:
-            print("Errror: Please check for invalid inputs in the sequence.","\nError in: ","Sequence number=",i+1,",","Sequence = ",data[i],",","\nNOTE: Spaces, Special characters('[@_!#$%^&*()<>?/\|}{~:]') and Extra characters(BJOUXZ) should not be there.")
+            print("Errror: Please check for invalid inputs in the sequence.","\nError in: ","Sequence number=",i+1,",","Sequence = ",data[i],",","\nNOTE: Spaces, Special characters('[@_!#$%^&*()<>?/\\|}{~:]') and Extra characters(BJOUXZ) should not be there.")
             return
         df.at[i,'Sequence'] = data[i]
         Y.append("".join(repstring(str(data[i]))))
@@ -1736,7 +1834,7 @@ def ctc_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 
 ######################################AAC###################################
 def ctd(file,out):
@@ -1928,7 +2026,7 @@ def ctd_split(file,v,out):
     df5.columns = head
     df5 = round(df5,2)
     df5.to_csv(out,index=None)
-    os.remove('tempfile_out')
+    safe_remove('tempfile_out')
 ################################################################################
 class ProgressBar(object):
     DEFAULT = 'Progress: %(bar)s %(percent)3d%%'
@@ -2350,7 +2448,7 @@ if Job == 'AAC' or Job == 'ALLCOMP':
         df = pd.read_csv('tempfile_out')
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.aac',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         file1 = nt(Sequence,nter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2360,7 +2458,7 @@ if Job == 'AAC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.aac_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(Sequence,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2370,7 +2468,7 @@ if Job == 'AAC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.aac_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(Sequence,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2380,7 +2478,7 @@ if Job == 'AAC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.aac_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0 :
         file1 = restnc(Sequence,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2390,7 +2488,7 @@ if Job == 'AAC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.aac_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2400,7 +2498,7 @@ if Job == 'AAC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.aac_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         aac_split(seq,sp,result_filename)
         aac_split(seq,sp,'sam_allcomp.aac_st')
@@ -2412,7 +2510,7 @@ if Job == 'DPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.dpc',index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.dpc',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         file1 = nt(Sequence,nter)
         print('Order of Dipeptide:',lg,'\n')
@@ -2423,7 +2521,7 @@ if Job == 'DPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.dpc_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(Sequence,cter)
         print('Order of Dipeptide:',lg,'\n')
@@ -2434,7 +2532,7 @@ if Job == 'DPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.dpc_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(Sequence,nrest,crest)
         print('Order of Dipeptide:',lg,'\n')
@@ -2445,7 +2543,7 @@ if Job == 'DPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.dpc_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(Sequence,ncrest)
         print('Order of Dipeptide:',lg,'\n')
@@ -2456,7 +2554,7 @@ if Job == 'DPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.dpc_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         print('Order of Dipeptide:',lg,'\n')
@@ -2467,21 +2565,21 @@ if Job == 'DPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.dpc_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         print('Order of Dipeptide:',lg,'\n')
         dpc_split(seq,lg,sp,'tempfile_out')
         df = pd.read_csv('tempfile_out')
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.dpc_st',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
 if Job == 'TPC' or Job == 'ALLCOMP':
     if (nter == 0) and (cter == 0) and (nrest == 0) and (crest == 0) and (sp == 0) and (ncter == 0) and (ncrest == 0):
         tpc_comp(seq,'tempfile_out')
         df = pd.read_csv('tempfile_out')
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.tpc',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         file1 = nt(Sequence,nter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2491,7 +2589,7 @@ if Job == 'TPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.tpc_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(Sequence,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2501,7 +2599,7 @@ if Job == 'TPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.tpc_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(Sequence,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2511,7 +2609,7 @@ if Job == 'TPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.tpc_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(Sequence,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2521,7 +2619,7 @@ if Job == 'TPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.tpc_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2531,7 +2629,7 @@ if Job == 'TPC' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.tpc_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         tpc_split(seq,sp,result_filename)
         tpc_split(seq,sp,'sam_allcomp.tpc_st')
@@ -2548,7 +2646,7 @@ if Job == 'ATC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.atc_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(Sequence,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2558,7 +2656,7 @@ if Job == 'ATC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.atc_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(Sequence,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2568,7 +2666,7 @@ if Job == 'ATC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.atc_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(Sequence,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2578,7 +2676,7 @@ if Job == 'ATC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.atc_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2588,7 +2686,7 @@ if Job == 'ATC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.atc_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         atc_split(seq,sp,result_filename)
         atc_split(seq,sp,'sam_allcomp.atc_st')
@@ -2605,7 +2703,7 @@ if Job == 'BTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.btc_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(Sequence,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2615,7 +2713,7 @@ if Job == 'BTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.btc_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(Sequence,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2625,7 +2723,7 @@ if Job == 'BTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.btc_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(Sequence,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2635,7 +2733,7 @@ if Job == 'BTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.btc_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2645,7 +2743,7 @@ if Job == 'BTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.btc_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         bond_split(seq,sp,result_filename)
         bond_split(seq,sp,'sam_allcomp.btc_st')
@@ -2662,7 +2760,7 @@ if Job == 'PCP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.pcp_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(Sequence,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2672,7 +2770,7 @@ if Job == 'PCP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.pcp_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(Sequence,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2682,7 +2780,7 @@ if Job == 'PCP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.pcp_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(Sequence,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2692,7 +2790,7 @@ if Job == 'PCP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.pcp_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2702,7 +2800,7 @@ if Job == 'PCP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.pcp_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         pcp_split(seq,sp,result_filename)
         pcp_split(seq,sp,'sam_allcomp.pcp_st')
@@ -2757,7 +2855,7 @@ if Job=='RRI' or Job == 'ALLCOMP':
         df = pd.read_csv('tempfile_out')
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.rri',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         file1 = nt(seq,nter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2767,7 +2865,7 @@ if Job=='RRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.rri_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(seq,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2777,7 +2875,7 @@ if Job=='RRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.rri_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(seq,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2787,7 +2885,7 @@ if Job=='RRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.rri_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(seq,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2797,7 +2895,7 @@ if Job=='RRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.rri_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2807,7 +2905,7 @@ if Job=='RRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.rri_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         RAAC_split(seq,sp,result_filename)
         RAAC_split(seq,sp,'sam_allcomp.rri_st')
@@ -2817,7 +2915,7 @@ if Job=='PRI' or Job == 'ALLCOMP':
         df = pd.read_csv('tempfile_out')
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.pri',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         file1 = nt(seq,nter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2827,7 +2925,7 @@ if Job=='PRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.pri_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(seq,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2837,7 +2935,7 @@ if Job=='PRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.pri_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(seq,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2847,7 +2945,7 @@ if Job=='PRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.pri_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(seq,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2857,7 +2955,7 @@ if Job=='PRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.pri_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2867,7 +2965,7 @@ if Job=='PRI' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.pri_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         repeats_split(seq,sp,result_filename)
         repeats_split(seq,sp,'sam_allcomp.pri_st')
@@ -2877,7 +2975,7 @@ if Job=='DDR' or Job == 'ALLCOMP':
         df = pd.read_csv('tempfile_out')
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.ddr',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         file1 = nt(seq,nter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2887,7 +2985,7 @@ if Job=='DDR' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.ddr_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(seq,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2897,7 +2995,7 @@ if Job=='DDR' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.ddr_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(seq,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2907,7 +3005,7 @@ if Job=='DDR' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.ddr_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(seq,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2917,7 +3015,7 @@ if Job=='DDR' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.ddr_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2927,7 +3025,7 @@ if Job=='DDR' or Job == 'ALLCOMP':
         df.iloc[:,:-1].to_csv(result_filename,index=None)
         df.iloc[:,:-1].to_csv('sam_allcomp.ddr_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         DDOR_split(seq,sp,result_filename)
         DDOR_split(seq,sp,'sam_allcomp.ddr_st')
@@ -2937,7 +3035,7 @@ if Job == 'SEP' or Job == 'ALLCOMP':
         df = pd.read_csv('tempfile_out')
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.sep',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         file1 = nt(Sequence,nter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2947,7 +3045,7 @@ if Job == 'SEP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.sep_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(Sequence,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2957,7 +3055,7 @@ if Job == 'SEP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.sep_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(Sequence,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2967,7 +3065,7 @@ if Job == 'SEP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.sep_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(Sequence,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2977,7 +3075,7 @@ if Job == 'SEP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.sep_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2987,7 +3085,7 @@ if Job == 'SEP' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.sep_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         file1 =split(seq,sp)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -2999,7 +3097,7 @@ if Job == 'SER' or Job == 'ALLCOMP':
         df = pd.read_csv('tempfile_out')
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ser',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         file1 = nt(Sequence,nter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3009,7 +3107,7 @@ if Job == 'SER' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ser_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(Sequence,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3019,7 +3117,7 @@ if Job == 'SER' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ser_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(Sequence,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3029,7 +3127,7 @@ if Job == 'SER' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ser_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(Sequence,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3039,7 +3137,7 @@ if Job == 'SER' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ser_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3049,7 +3147,7 @@ if Job == 'SER' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ser_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         file1 =split(seq,sp)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3062,7 +3160,7 @@ if Job == 'SPC' or Job == 'ALLCOMP':
         df = df.round(3)
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.spc',index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         file1 = nt(Sequence,nter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3072,7 +3170,7 @@ if Job == 'SPC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.spc_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         file1 = ct(Sequence,cter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3082,7 +3180,7 @@ if Job == 'SPC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.spc_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         file1 = rest(Sequence,nrest,crest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3092,7 +3190,7 @@ if Job == 'SPC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.spc_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         file1 = restnc(Sequence,ncrest)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3102,7 +3200,7 @@ if Job == 'SPC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.spc_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3112,7 +3210,7 @@ if Job == 'SPC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.spc_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         file1 =split(seq,sp)
         file1.to_csv('sam_input.csv', index=None, header=False)
@@ -3125,7 +3223,7 @@ if Job == 'ACR':
         autocorr_full_aa(seq,lg,'tempfile_out')
         df = pd.read_csv('tempfile_out')
         df.to_csv(result_filename,index=None)
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nter != 0:
         print('Value of lag:',lg,'\n')
         file1 = nt(Sequence,nter)
@@ -3135,7 +3233,7 @@ if Job == 'ACR':
         df.columns = 'N'+df.columns
         df.to_csv(result_filename,index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         print('Value of lag:',lg,'\n')
         file1 = ct(Sequence,cter)
@@ -3145,7 +3243,7 @@ if Job == 'ACR':
         df.columns = 'C'+df.columns
         df.to_csv(result_filename,index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         print('Value of lag:',lg,'\n')
         file1 = rest(Sequence,nrest,crest)
@@ -3155,7 +3253,7 @@ if Job == 'ACR':
         df.columns = 'R'+df.columns
         df.to_csv(result_filename,index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         print('Value of lag:',lg,'\n')
         file1 = restnc(Sequence,ncrest)
@@ -3165,7 +3263,7 @@ if Job == 'ACR':
         df.columns = 'RNC'+df.columns
         df.to_csv(result_filename,index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         file1 = nct(Sequence,ncter)
         print('Value of lag:',lg,'\n')
@@ -3175,7 +3273,7 @@ if Job == 'ACR':
         df.columns = 'NC'+df.columns
         df.to_csv(result_filename,index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         print('Value of lag:',lg,'\n')
         file1 =split(seq,sp)
@@ -3197,7 +3295,7 @@ if Job == 'PAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.paac_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 = ct(seq,cter)
@@ -3208,7 +3306,7 @@ if Job == 'PAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.paac_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 = rest(Sequence,nrest,crest)
@@ -3219,7 +3317,7 @@ if Job == 'PAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.paac_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 = restnc(Sequence,ncrest)
@@ -3230,7 +3328,7 @@ if Job == 'PAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.paac_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 = nct(seq,ncter)
@@ -3241,7 +3339,7 @@ if Job == 'PAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.paac_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 =split(seq,sp)
@@ -3264,7 +3362,7 @@ if Job == 'APAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.apaac_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 = ct(seq,cter)
@@ -3275,7 +3373,7 @@ if Job == 'APAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.apaac_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 = rest(Sequence,nrest,crest)
@@ -3286,7 +3384,7 @@ if Job == 'APAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.apaac_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 = restnc(Sequence,ncrest)
@@ -3297,7 +3395,7 @@ if Job == 'APAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.apaac_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 = nct(seq,ncter)
@@ -3308,7 +3406,7 @@ if Job == 'APAAC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.apaac_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         print('Order of Gap:',lg,' ;Value of weight:',pw,'\n')
         file1 =split(seq,sp)
@@ -3331,7 +3429,7 @@ if Job == 'QSO' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.qso_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         print('Order of Gap:',lg,' ;Value of weight:',wq,'\n')
         file1 = ct(seq,cter)
@@ -3342,7 +3440,7 @@ if Job == 'QSO' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.qso_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         print('Order of Gap:',lg,' ;Value of weight:',wq,'\n')
         file1 = rest(Sequence,nrest,crest)
@@ -3353,7 +3451,7 @@ if Job == 'QSO' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.qso_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         print('Order of Gap:',lg,' ;Value of weight:',wq,'\n')
         file1 = restnc(Sequence,ncrest)
@@ -3364,7 +3462,7 @@ if Job == 'QSO' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.qso_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         print('Order of Gap:',lg,' ;Value of weight:',wq,'\n')
         file1 = nct(seq,ncter)
@@ -3375,7 +3473,7 @@ if Job == 'QSO' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.qso_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         print('Order of Gap:',lg,' ;Value of weight:',wq,'\n')
         file1 =split(seq,sp)
@@ -3398,7 +3496,7 @@ if Job == 'SOC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.soc_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         print('Order of Gap:',lg,'\n')
         file1 = ct(seq,cter)
@@ -3409,7 +3507,7 @@ if Job == 'SOC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.soc_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         print('Order of Gap:',lg,'\n')
         file1 = rest(Sequence,nrest,crest)
@@ -3420,7 +3518,7 @@ if Job == 'SOC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.soc_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         print('Order of Gap:',lg,'\n')
         file1 = restnc(Sequence,ncrest)
@@ -3431,7 +3529,7 @@ if Job == 'SOC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.soc_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         print('Order of Gap:',lg,'\n')
         file1 = nct(seq,ncter)
@@ -3442,7 +3540,7 @@ if Job == 'SOC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.soc_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         print('Order of Gap:',lg,'\n')
         file1 =split(seq,sp)
@@ -3464,7 +3562,7 @@ if Job == 'CTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctc_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         print('Order of Gap:',lg,'\n')
         file1 = ct(seq,cter)
@@ -3475,7 +3573,7 @@ if Job == 'CTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctc_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         print('Order of Gap:',lg,'\n')
         file1 = rest(Sequence,nrest,crest)
@@ -3486,7 +3584,7 @@ if Job == 'CTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctc_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         print('Order of Gap:',lg,'\n')
         file1 = restnc(Sequence,ncrest)
@@ -3497,7 +3595,7 @@ if Job == 'CTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctc_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         print('Order of Gap:',lg,'\n')
         file1 = nct(seq,ncter)
@@ -3508,7 +3606,7 @@ if Job == 'CTC' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctc_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         print('Order of Gap:',lg,'\n')
         file1 =split(seq,sp)
@@ -3530,7 +3628,7 @@ if Job == 'CeTD' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctd_nt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if cter != 0:
         print('Order of Gap:',lg,'\n')
         file1 = ct(seq,cter)
@@ -3541,7 +3639,7 @@ if Job == 'CeTD' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctd_ct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if nrest != 0 or crest != 0:
         print('Order of Gap:',lg,'\n')
         file1 = rest(Sequence,nrest,crest)
@@ -3552,7 +3650,7 @@ if Job == 'CeTD' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctd_rt',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncrest != 0:
         print('Order of Gap:',lg,'\n')
         file1 = restnc(Sequence,ncrest)
@@ -3563,7 +3661,7 @@ if Job == 'CeTD' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctd_rnc',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if ncter != 0:
         print('Order of Gap:',lg,'\n')
         file1 = nct(seq,ncter)
@@ -3574,7 +3672,7 @@ if Job == 'CeTD' or Job == 'ALLCOMP':
         df.to_csv(result_filename,index=None)
         df.to_csv('sam_allcomp.ctd_nct',index=None)
         os.remove('sam_input.csv')
-        os.remove('tempfile_out')
+        safe_remove('tempfile_out')
     if sp != 0:
         print('Order of Gap:',lg,'\n')
         file1 =split(seq,sp)

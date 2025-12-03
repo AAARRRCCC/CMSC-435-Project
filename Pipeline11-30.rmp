@@ -13,7 +13,7 @@
     <parameter key="process_duration_for_mail" value="30"/>
     <parameter key="encoding" value="SYSTEM"/>
     <process expanded="true">
-      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Split Data from Starting" width="90" x="45" y="136">
+      <operator activated="false" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Split Data from Starting" width="90" x="45" y="136">
         <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
         <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/SplitData.py"/>
         <parameter key="notebook_cell_tag_filter" value=""/>
@@ -21,7 +21,7 @@
         <parameter key="package_manager" value="conda (anaconda)"/>
         <parameter key="use_macros" value="false"/>
       </operator>
-      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="runPFeature" width="90" x="179" y="34">
+      <operator activated="false" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="runPFeature" width="90" x="179" y="34">
         <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
         <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/pfeature_standalone/runPFeature.py"/>
         <parameter key="notebook_cell_tag_filter" value=""/>
@@ -29,7 +29,7 @@
         <parameter key="package_manager" value="conda (anaconda)"/>
         <parameter key="use_macros" value="false"/>
       </operator>
-      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="124" name="Glue Labels" width="90" x="313" y="85">
+      <operator activated="false" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="124" name="Glue Labels" width="90" x="313" y="85">
         <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
         <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/GlueLabels.py"/>
         <parameter key="notebook_cell_tag_filter" value=""/>
@@ -37,17 +37,55 @@
         <parameter key="package_manager" value="conda (anaconda)"/>
         <parameter key="use_macros" value="false"/>
       </operator>
-      <operator activated="true" class="blending:set_role" compatibility="12.0.001" expanded="true" height="82" name="Set Role (3)" width="90" x="447" y="34">
+      <operator activated="true" class="read_csv" compatibility="12.0.001" expanded="true" height="68" name="Read CSV" width="90" x="313" y="238">
+        <parameter key="csv_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/GlueLabelsOutput.csv"/>
+        <parameter key="column_separators" value=","/>
+        <parameter key="trim_lines" value="false"/>
+        <parameter key="multiline_text" value="false"/>
+        <parameter key="use_quotes" value="true"/>
+        <parameter key="quotes_character" value="&quot;"/>
+        <parameter key="escape_character" value="\"/>
+        <parameter key="skip_comments" value="false"/>
+        <parameter key="comment_characters" value="#"/>
+        <parameter key="starting_row" value="1"/>
+        <parameter key="parse_numbers" value="true"/>
+        <parameter key="decimal_character" value="."/>
+        <parameter key="grouped_digits" value="false"/>
+        <parameter key="grouping_character" value=","/>
+        <parameter key="infinity_representation" value=""/>
+        <parameter key="date_format" value=""/>
+        <parameter key="use_header_row" value="true"/>
+        <parameter key="header_row" value="1"/>
+        <parameter key="first_row_as_names" value="true"/>
+        <list key="annotations"/>
+        <parameter key="time_zone" value="America/New_York"/>
+        <parameter key="locale" value="English (United States)"/>
+        <parameter key="encoding" value="SYSTEM"/>
+        <parameter key="read_all_values_as_polynominal" value="false"/>
+        <list key="data_set_meta_data_information"/>
+        <parameter key="read_not_matching_values_as_missings" value="true"/>
+      </operator>
+      <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV (2)" width="90" x="447" y="34">
+        <parameter key="csv_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/GlueLabelsOutput.csv"/>
+        <parameter key="column_separator" value=","/>
+        <parameter key="write_attribute_names" value="true"/>
+        <parameter key="quote_nominal_values" value="true"/>
+        <parameter key="format_date_attributes" value="true"/>
+        <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+        <parameter key="append_to_file" value="false"/>
+        <parameter key="encoding" value="SYSTEM"/>
+      </operator>
+      <operator activated="true" class="blending:set_role" compatibility="12.0.001" expanded="true" height="82" name="Set Role (3)" width="90" x="581" y="34">
         <list key="set_roles">
           <parameter key="class" value="label"/>
         </list>
       </operator>
-      <operator activated="true" class="weight_by_information_gain" compatibility="12.0.001" expanded="true" height="82" name="Weight by Information Gain" width="90" x="581" y="34">
+      <operator activated="false" class="weight_by_information_gain" compatibility="12.0.001" expanded="true" height="82" name="Weight by Information Gain" width="90" x="715" y="187">
         <parameter key="normalize_weights" value="true"/>
         <parameter key="sort_weights" value="true"/>
         <parameter key="sort_direction" value="ascending"/>
       </operator>
-      <operator activated="true" class="select_by_weights" compatibility="12.0.001" expanded="true" height="103" name="Select by Weights" width="90" x="715" y="34">
+      <operator activated="false" class="select_by_weights" compatibility="12.0.001" expanded="true" height="103" name="Select by Weights" width="90" x="849" y="187">
         <parameter key="weight_relation" value="top k"/>
         <parameter key="weight" value="1.0"/>
         <parameter key="k" value="400"/>
@@ -55,7 +93,7 @@
         <parameter key="deselect_unknown" value="true"/>
         <parameter key="use_absolute_weights" value="true"/>
       </operator>
-      <operator activated="true" class="concurrency:cross_validation" compatibility="12.0.001" expanded="true" height="145" name="Cross Validation" width="90" x="916" y="34">
+      <operator activated="true" class="concurrency:cross_validation" compatibility="12.0.001" expanded="true" height="145" name="Cross Validation" width="90" x="983" y="34">
         <parameter key="split_on_batch_attribute" value="false"/>
         <parameter key="leave_one_out" value="false"/>
         <parameter key="number_of_folds" value="5"/>
@@ -72,7 +110,7 @@
             <parameter key="package_manager" value="conda (anaconda)"/>
             <parameter key="use_macros" value="false"/>
           </operator>
-          <operator activated="false" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="82" name="Discretization" width="90" x="313" y="85">
+          <operator activated="false" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="82" name="Discretization" width="90" x="246" y="136">
             <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
             <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/Discretization.py"/>
             <parameter key="notebook_cell_tag_filter" value=""/>
@@ -80,7 +118,7 @@
             <parameter key="package_manager" value="conda (anaconda)"/>
             <parameter key="use_macros" value="false"/>
           </operator>
-          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Oversample" width="90" x="447" y="34">
+          <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Oversample" width="90" x="380" y="34">
             <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
             <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/Oversample.py"/>
             <parameter key="notebook_cell_tag_filter" value=""/>
@@ -107,6 +145,108 @@
             <parameter key="range_name_type" value="long"/>
             <parameter key="automatic_number_of_digits" value="true"/>
             <parameter key="number_of_digits" value="3"/>
+          </operator>
+          <operator activated="false" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost (8)" width="90" x="849" y="136">
+            <parameter key="booster" value="tree booster"/>
+            <parameter key="rounds" value="150"/>
+            <parameter key="early_stopping" value="none"/>
+            <parameter key="early_stopping_rounds" value="10"/>
+            <parameter key="learning_rate" value="0.05"/>
+            <parameter key="min_split_loss" value="0.0"/>
+            <parameter key="max_depth" value="8"/>
+            <parameter key="min_child_weight" value="1.0"/>
+            <parameter key="subsample" value="0.7"/>
+            <parameter key="tree_method" value="auto"/>
+            <parameter key="lambda" value="1.0"/>
+            <parameter key="alpha" value="0.1"/>
+            <parameter key="sample_type" value="uniform"/>
+            <parameter key="normalize_type" value="tree"/>
+            <parameter key="rate_drop" value="0.0"/>
+            <parameter key="skip_drop" value="0.0"/>
+            <parameter key="updater" value="shotgun"/>
+            <parameter key="feature_selector" value="cyclic"/>
+            <parameter key="top_k" value="0"/>
+            <enumeration key="expert_parameters">
+              <parameter key="parameter" value="scale_pos_weight.5\.0"/>
+              <parameter key="parameter" value="colsample_bytree.\.7"/>
+            </enumeration>
+          </operator>
+          <operator activated="false" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost (5)" width="90" x="849" y="238">
+            <parameter key="booster" value="tree booster"/>
+            <parameter key="rounds" value="150"/>
+            <parameter key="early_stopping" value="none"/>
+            <parameter key="early_stopping_rounds" value="10"/>
+            <parameter key="learning_rate" value="0.05"/>
+            <parameter key="min_split_loss" value="0.0"/>
+            <parameter key="max_depth" value="8"/>
+            <parameter key="min_child_weight" value="1.0"/>
+            <parameter key="subsample" value="0.7"/>
+            <parameter key="tree_method" value="auto"/>
+            <parameter key="lambda" value="1.0"/>
+            <parameter key="alpha" value="0.1"/>
+            <parameter key="sample_type" value="uniform"/>
+            <parameter key="normalize_type" value="tree"/>
+            <parameter key="rate_drop" value="0.0"/>
+            <parameter key="skip_drop" value="0.0"/>
+            <parameter key="updater" value="shotgun"/>
+            <parameter key="feature_selector" value="cyclic"/>
+            <parameter key="top_k" value="0"/>
+            <enumeration key="expert_parameters">
+              <parameter key="parameter" value="scale_pos_weight.5\.0"/>
+              <parameter key="parameter" value="colsample_bytree.\.7"/>
+            </enumeration>
+          </operator>
+          <operator activated="false" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV (3)" width="90" x="648" y="340">
+            <parameter key="csv_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/TempfilesAndOutput/debug after oversample.csv"/>
+            <parameter key="column_separator" value=","/>
+            <parameter key="write_attribute_names" value="true"/>
+            <parameter key="quote_nominal_values" value="true"/>
+            <parameter key="format_date_attributes" value="true"/>
+            <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
+            <parameter key="append_to_file" value="false"/>
+            <parameter key="encoding" value="SYSTEM"/>
+          </operator>
+          <operator activated="false" class="id3" compatibility="12.0.001" expanded="true" height="82" name="ID3" width="90" x="782" y="340">
+            <parameter key="criterion" value="gain_ratio"/>
+            <parameter key="minimal_size_for_split" value="4"/>
+            <parameter key="minimal_leaf_size" value="2"/>
+            <parameter key="minimal_gain" value="0.01"/>
+          </operator>
+          <operator activated="false" class="concurrency:parallel_decision_tree" compatibility="12.0.001" expanded="true" height="103" name="Decision Tree" width="90" x="849" y="340">
+            <parameter key="criterion" value="gain_ratio"/>
+            <parameter key="maximal_depth" value="10"/>
+            <parameter key="apply_pruning" value="true"/>
+            <parameter key="confidence" value="0.1"/>
+            <parameter key="apply_prepruning" value="true"/>
+            <parameter key="minimal_gain" value="0.01"/>
+            <parameter key="minimal_leaf_size" value="2"/>
+            <parameter key="minimal_size_for_split" value="4"/>
+            <parameter key="number_of_prepruning_alternatives" value="3"/>
+          </operator>
+          <operator activated="false" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost" width="90" x="380" y="289">
+            <parameter key="booster" value="tree booster"/>
+            <parameter key="rounds" value="200"/>
+            <parameter key="early_stopping" value="none"/>
+            <parameter key="early_stopping_rounds" value="10"/>
+            <parameter key="learning_rate" value="0.03"/>
+            <parameter key="min_split_loss" value="0.0"/>
+            <parameter key="max_depth" value="10"/>
+            <parameter key="min_child_weight" value="1.0"/>
+            <parameter key="subsample" value="0.7"/>
+            <parameter key="tree_method" value="auto"/>
+            <parameter key="lambda" value="1.0"/>
+            <parameter key="alpha" value="0.1"/>
+            <parameter key="sample_type" value="uniform"/>
+            <parameter key="normalize_type" value="tree"/>
+            <parameter key="rate_drop" value="0.0"/>
+            <parameter key="skip_drop" value="0.0"/>
+            <parameter key="updater" value="shotgun"/>
+            <parameter key="feature_selector" value="cyclic"/>
+            <parameter key="top_k" value="0"/>
+            <enumeration key="expert_parameters">
+              <parameter key="parameter" value="scale_pos_weight.5\.0"/>
+              <parameter key="parameter" value="colsample_bytree.\.7"/>
+            </enumeration>
           </operator>
           <operator activated="true" class="blending:set_role" compatibility="12.0.001" expanded="true" height="82" name="Set Role" width="90" x="581" y="34">
             <list key="set_roles">
@@ -218,32 +358,49 @@
               <portSpacing port="sink_stacking model" spacing="0"/>
             </process>
           </operator>
-          <operator activated="false" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost (8)" width="90" x="849" y="136">
-            <parameter key="booster" value="tree booster"/>
-            <parameter key="rounds" value="150"/>
-            <parameter key="early_stopping" value="none"/>
-            <parameter key="early_stopping_rounds" value="10"/>
-            <parameter key="learning_rate" value="0.05"/>
-            <parameter key="min_split_loss" value="0.0"/>
-            <parameter key="max_depth" value="8"/>
-            <parameter key="min_child_weight" value="1.0"/>
-            <parameter key="subsample" value="0.7"/>
-            <parameter key="tree_method" value="auto"/>
-            <parameter key="lambda" value="1.0"/>
-            <parameter key="alpha" value="0.1"/>
-            <parameter key="sample_type" value="uniform"/>
-            <parameter key="normalize_type" value="tree"/>
-            <parameter key="rate_drop" value="0.0"/>
-            <parameter key="skip_drop" value="0.0"/>
-            <parameter key="updater" value="shotgun"/>
-            <parameter key="feature_selector" value="cyclic"/>
-            <parameter key="top_k" value="0"/>
-            <enumeration key="expert_parameters">
-              <parameter key="parameter" value="scale_pos_weight.5\.0"/>
-              <parameter key="parameter" value="colsample_bytree.\.7"/>
-            </enumeration>
+          <operator activated="false" class="h2o:gradient_boosted_trees" compatibility="11.0.002" expanded="true" height="103" name="Gradient Boosted Trees (5)" width="90" x="514" y="238">
+            <parameter key="number_of_trees" value="250"/>
+            <parameter key="reproducible" value="false"/>
+            <parameter key="maximum_number_of_threads" value="4"/>
+            <parameter key="use_local_random_seed" value="false"/>
+            <parameter key="local_random_seed" value="1992"/>
+            <parameter key="maximal_depth" value="8"/>
+            <parameter key="min_rows" value="5.0"/>
+            <parameter key="min_split_improvement" value="1.0E-5"/>
+            <parameter key="number_of_bins" value="4"/>
+            <parameter key="learning_rate" value="0.01"/>
+            <parameter key="sample_rate" value="0.8"/>
+            <parameter key="distribution" value="AUTO"/>
+            <parameter key="early_stopping" value="false"/>
+            <parameter key="stopping_rounds" value="1"/>
+            <parameter key="stopping_metric" value="AUTO"/>
+            <parameter key="stopping_tolerance" value="0.001"/>
+            <list key="monotone_constraints"/>
+            <parameter key="max_runtime_seconds" value="0"/>
+            <list key="expert_parameters"/>
           </operator>
-          <operator activated="false" class="vote" compatibility="12.0.001" expanded="true" height="68" name="Vote" width="90" x="715" y="187">
+          <operator activated="false" class="h2o:gradient_boosted_trees" compatibility="11.0.002" expanded="true" height="103" name="Gradient Boosted Trees (4)" width="90" x="447" y="391">
+            <parameter key="number_of_trees" value="200"/>
+            <parameter key="reproducible" value="false"/>
+            <parameter key="maximum_number_of_threads" value="4"/>
+            <parameter key="use_local_random_seed" value="false"/>
+            <parameter key="local_random_seed" value="1992"/>
+            <parameter key="maximal_depth" value="10"/>
+            <parameter key="min_rows" value="5.0"/>
+            <parameter key="min_split_improvement" value="1.0E-5"/>
+            <parameter key="number_of_bins" value="4"/>
+            <parameter key="learning_rate" value="0.05"/>
+            <parameter key="sample_rate" value="0.8"/>
+            <parameter key="distribution" value="AUTO"/>
+            <parameter key="early_stopping" value="false"/>
+            <parameter key="stopping_rounds" value="1"/>
+            <parameter key="stopping_metric" value="AUTO"/>
+            <parameter key="stopping_tolerance" value="0.001"/>
+            <list key="monotone_constraints"/>
+            <parameter key="max_runtime_seconds" value="0"/>
+            <list key="expert_parameters"/>
+          </operator>
+          <operator activated="false" class="vote" compatibility="12.0.001" expanded="true" height="68" name="Vote" width="90" x="715" y="238">
             <process expanded="true">
               <operator activated="true" class="concurrency:parallel_random_forest" compatibility="12.0.001" expanded="true" height="103" name="Random Forest (2)" width="90" x="112" y="238">
                 <parameter key="number_of_trees" value="50"/>
@@ -265,17 +422,17 @@
                 <parameter key="enable_parallel_execution" value="true"/>
               </operator>
               <operator activated="true" class="h2o:gradient_boosted_trees" compatibility="11.0.002" expanded="true" height="103" name="Gradient Boosted Trees (2)" width="90" x="112" y="34">
-                <parameter key="number_of_trees" value="200"/>
+                <parameter key="number_of_trees" value="250"/>
                 <parameter key="reproducible" value="false"/>
                 <parameter key="maximum_number_of_threads" value="4"/>
                 <parameter key="use_local_random_seed" value="false"/>
                 <parameter key="local_random_seed" value="1992"/>
-                <parameter key="maximal_depth" value="8"/>
+                <parameter key="maximal_depth" value="10"/>
                 <parameter key="min_rows" value="5.0"/>
                 <parameter key="min_split_improvement" value="1.0E-5"/>
                 <parameter key="number_of_bins" value="4"/>
                 <parameter key="learning_rate" value="0.05"/>
-                <parameter key="sample_rate" value="0.8"/>
+                <parameter key="sample_rate" value="1.0"/>
                 <parameter key="distribution" value="AUTO"/>
                 <parameter key="early_stopping" value="false"/>
                 <parameter key="stopping_rounds" value="1"/>
@@ -287,14 +444,14 @@
               </operator>
               <operator activated="true" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost (6)" width="90" x="112" y="136">
                 <parameter key="booster" value="tree booster"/>
-                <parameter key="rounds" value="150"/>
+                <parameter key="rounds" value="200"/>
                 <parameter key="early_stopping" value="none"/>
                 <parameter key="early_stopping_rounds" value="10"/>
                 <parameter key="learning_rate" value="0.05"/>
                 <parameter key="min_split_loss" value="0.0"/>
-                <parameter key="max_depth" value="8"/>
+                <parameter key="max_depth" value="10"/>
                 <parameter key="min_child_weight" value="1.0"/>
-                <parameter key="subsample" value="0.7"/>
+                <parameter key="subsample" value="1.0"/>
                 <parameter key="tree_method" value="auto"/>
                 <parameter key="lambda" value="1.0"/>
                 <parameter key="alpha" value="0.1"/>
@@ -326,96 +483,19 @@
               <portSpacing port="sink_base model 4" spacing="0"/>
             </process>
           </operator>
-          <operator activated="false" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost (5)" width="90" x="849" y="238">
-            <parameter key="booster" value="tree booster"/>
-            <parameter key="rounds" value="150"/>
-            <parameter key="early_stopping" value="none"/>
-            <parameter key="early_stopping_rounds" value="10"/>
-            <parameter key="learning_rate" value="0.05"/>
-            <parameter key="min_split_loss" value="0.0"/>
-            <parameter key="max_depth" value="8"/>
-            <parameter key="min_child_weight" value="1.0"/>
-            <parameter key="subsample" value="0.7"/>
-            <parameter key="tree_method" value="auto"/>
-            <parameter key="lambda" value="1.0"/>
-            <parameter key="alpha" value="0.1"/>
-            <parameter key="sample_type" value="uniform"/>
-            <parameter key="normalize_type" value="tree"/>
-            <parameter key="rate_drop" value="0.0"/>
-            <parameter key="skip_drop" value="0.0"/>
-            <parameter key="updater" value="shotgun"/>
-            <parameter key="feature_selector" value="cyclic"/>
-            <parameter key="top_k" value="0"/>
-            <enumeration key="expert_parameters">
-              <parameter key="parameter" value="scale_pos_weight.5\.0"/>
-              <parameter key="parameter" value="colsample_bytree.\.7"/>
-            </enumeration>
-          </operator>
-          <operator activated="false" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV (3)" width="90" x="648" y="340">
-            <parameter key="csv_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/TempfilesAndOutput/debug after oversample.csv"/>
-            <parameter key="column_separator" value=","/>
-            <parameter key="write_attribute_names" value="true"/>
-            <parameter key="quote_nominal_values" value="true"/>
-            <parameter key="format_date_attributes" value="true"/>
-            <parameter key="date_format" value="yyyy-MM-dd HH:mm:ss"/>
-            <parameter key="append_to_file" value="false"/>
-            <parameter key="encoding" value="SYSTEM"/>
-          </operator>
-          <operator activated="false" class="id3" compatibility="12.0.001" expanded="true" height="82" name="ID3" width="90" x="782" y="340">
-            <parameter key="criterion" value="gain_ratio"/>
-            <parameter key="minimal_size_for_split" value="4"/>
-            <parameter key="minimal_leaf_size" value="2"/>
-            <parameter key="minimal_gain" value="0.01"/>
-          </operator>
-          <operator activated="false" class="concurrency:parallel_decision_tree" compatibility="12.0.001" expanded="true" height="103" name="Decision Tree" width="90" x="849" y="340">
-            <parameter key="criterion" value="gain_ratio"/>
-            <parameter key="maximal_depth" value="10"/>
-            <parameter key="apply_pruning" value="true"/>
-            <parameter key="confidence" value="0.1"/>
-            <parameter key="apply_prepruning" value="true"/>
-            <parameter key="minimal_gain" value="0.01"/>
-            <parameter key="minimal_leaf_size" value="2"/>
-            <parameter key="minimal_size_for_split" value="4"/>
-            <parameter key="number_of_prepruning_alternatives" value="3"/>
-          </operator>
-          <operator activated="false" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost" width="90" x="514" y="289">
-            <parameter key="booster" value="tree booster"/>
-            <parameter key="rounds" value="200"/>
-            <parameter key="early_stopping" value="none"/>
-            <parameter key="early_stopping_rounds" value="10"/>
-            <parameter key="learning_rate" value="0.03"/>
-            <parameter key="min_split_loss" value="0.0"/>
-            <parameter key="max_depth" value="10"/>
-            <parameter key="min_child_weight" value="1.0"/>
-            <parameter key="subsample" value="0.7"/>
-            <parameter key="tree_method" value="auto"/>
-            <parameter key="lambda" value="1.0"/>
-            <parameter key="alpha" value="0.1"/>
-            <parameter key="sample_type" value="uniform"/>
-            <parameter key="normalize_type" value="tree"/>
-            <parameter key="rate_drop" value="0.0"/>
-            <parameter key="skip_drop" value="0.0"/>
-            <parameter key="updater" value="shotgun"/>
-            <parameter key="feature_selector" value="cyclic"/>
-            <parameter key="top_k" value="0"/>
-            <enumeration key="expert_parameters">
-              <parameter key="parameter" value="scale_pos_weight.5\.0"/>
-              <parameter key="parameter" value="colsample_bytree.\.7"/>
-            </enumeration>
-          </operator>
-          <operator activated="false" class="maratool:Weighted Vote" compatibility="1.4.001" expanded="true" height="68" name="Weighted Vote" width="90" x="715" y="238">
+          <operator activated="false" class="maratool:Weighted Vote" compatibility="1.4.001" expanded="true" height="68" name="Weighted Vote" width="90" x="715" y="289">
             <process expanded="true">
-              <operator activated="true" class="h2o:gradient_boosted_trees" compatibility="11.0.002" expanded="true" height="103" name="Gradient Boosted Trees" width="90" x="380" y="34">
-                <parameter key="number_of_trees" value="200"/>
+              <operator activated="true" class="h2o:gradient_boosted_trees" compatibility="11.0.002" expanded="true" height="103" name="Gradient Boosted Trees" width="90" x="447" y="34">
+                <parameter key="number_of_trees" value="300"/>
                 <parameter key="reproducible" value="false"/>
                 <parameter key="maximum_number_of_threads" value="4"/>
                 <parameter key="use_local_random_seed" value="false"/>
                 <parameter key="local_random_seed" value="1992"/>
-                <parameter key="maximal_depth" value="8"/>
+                <parameter key="maximal_depth" value="10"/>
                 <parameter key="min_rows" value="5.0"/>
                 <parameter key="min_split_improvement" value="1.0E-5"/>
                 <parameter key="number_of_bins" value="4"/>
-                <parameter key="learning_rate" value="0.05"/>
+                <parameter key="learning_rate" value="0.03"/>
                 <parameter key="sample_rate" value="0.8"/>
                 <parameter key="distribution" value="AUTO"/>
                 <parameter key="early_stopping" value="false"/>
@@ -426,16 +506,16 @@
                 <parameter key="max_runtime_seconds" value="0"/>
                 <list key="expert_parameters"/>
               </operator>
-              <operator activated="true" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost (4)" width="90" x="380" y="136">
+              <operator activated="true" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost (10)" width="90" x="447" y="136">
                 <parameter key="booster" value="tree booster"/>
-                <parameter key="rounds" value="150"/>
+                <parameter key="rounds" value="250"/>
                 <parameter key="early_stopping" value="none"/>
                 <parameter key="early_stopping_rounds" value="10"/>
-                <parameter key="learning_rate" value="0.05"/>
+                <parameter key="learning_rate" value="0.03"/>
                 <parameter key="min_split_loss" value="0.0"/>
-                <parameter key="max_depth" value="8"/>
+                <parameter key="max_depth" value="10"/>
                 <parameter key="min_child_weight" value="1.0"/>
-                <parameter key="subsample" value="0.7"/>
+                <parameter key="subsample" value="0.8"/>
                 <parameter key="tree_method" value="auto"/>
                 <parameter key="lambda" value="1.0"/>
                 <parameter key="alpha" value="0.1"/>
@@ -452,9 +532,9 @@
                 </enumeration>
               </operator>
               <connect from_port="training set 1" to_op="Gradient Boosted Trees" to_port="training set"/>
-              <connect from_port="training set 2" to_op="XGBoost (4)" to_port="training set"/>
+              <connect from_port="training set 2" to_op="XGBoost (10)" to_port="training set"/>
               <connect from_op="Gradient Boosted Trees" from_port="model" to_port="base model 1"/>
-              <connect from_op="XGBoost (4)" from_port="model" to_port="base model 2"/>
+              <connect from_op="XGBoost (10)" from_port="model" to_port="base model 2"/>
               <portSpacing port="source_training set 1" spacing="0"/>
               <portSpacing port="source_training set 2" spacing="0"/>
               <portSpacing port="source_training set 3" spacing="0"/>
@@ -578,7 +658,7 @@
           <portSpacing port="sink_performance 2" spacing="0"/>
         </process>
       </operator>
-      <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV" width="90" x="1050" y="136">
+      <operator activated="true" class="write_csv" compatibility="12.0.001" expanded="true" height="82" name="Write CSV" width="90" x="1117" y="136">
         <parameter key="column_separator" value=","/>
         <parameter key="write_attribute_names" value="true"/>
         <parameter key="quote_nominal_values" value="true"/>
@@ -587,12 +667,12 @@
         <parameter key="append_to_file" value="false"/>
         <parameter key="encoding" value="SYSTEM"/>
       </operator>
-      <operator activated="true" class="write_file" compatibility="12.0.001" expanded="true" height="68" name="Write File (7)" width="90" x="1184" y="187">
+      <operator activated="true" class="write_file" compatibility="12.0.001" expanded="true" height="68" name="Write File (7)" width="90" x="1251" y="187">
         <parameter key="resource_type" value="file"/>
         <parameter key="filename" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC 435 Project/TempfilesAndOutput/predictions_output.csv"/>
         <parameter key="mime_type" value="application/octet-stream"/>
       </operator>
-      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Calculate Metrics" width="90" x="1318" y="85">
+      <operator activated="true" class="python_scripting:execute_python" compatibility="11.0.004" expanded="true" height="103" name="Calculate Metrics" width="90" x="1385" y="85">
         <parameter key="script" value="import pandas as pd&#10;&#10;# The rm_main function is mandatory.&#10;# The number of arguments must match the number of input ports (can be none),&#10;# or the number of input ports plus one if the &quot;use macros&quot; parameter is set.&#10;#&#10;# If you want to use macros, uncomment the following line and check the &quot;use macros&quot; parameter:&#10;# def rm_main(data, macros):&#10;def rm_main(data):&#10;    # Print a greeting message (output can be found in the Log View)&#10;    print('Hello, world!')&#10;&#10;    # Display the type of the input data&#10;    print(f&quot;Type of input data: {type(data)}&quot;)&#10;&#10;    # Access the data (display first few rows)&#10;    print(&quot;Input data preview:&quot;)&#10;    print(data.head())&#10;&#10;    # Create an additional DataFrame to output&#10;    data2 = pd.DataFrame({'values': [3, 5, 77, 8]})&#10;&#10;    # Return the results&#10;    # Connect two output ports to receive 'data' and 'data2'&#10;    return data, data2"/>
         <parameter key="script_file" value="C:/Users/rbrad/Desktop/VCU Fall 2025/CMSC 435/CMSC-435-Project/Python-Scripts/CalculateMetrics.py"/>
         <parameter key="notebook_cell_tag_filter" value=""/>
@@ -600,15 +680,39 @@
         <parameter key="package_manager" value="conda (anaconda)"/>
         <parameter key="use_macros" value="false"/>
       </operator>
+      <operator activated="false" class="xgboost:xgboost" compatibility="0.1.003" expanded="true" height="103" name="XGBoost (9)" width="90" x="782" y="340">
+        <parameter key="booster" value="tree booster"/>
+        <parameter key="rounds" value="150"/>
+        <parameter key="early_stopping" value="none"/>
+        <parameter key="early_stopping_rounds" value="10"/>
+        <parameter key="learning_rate" value="0.05"/>
+        <parameter key="min_split_loss" value="0.0"/>
+        <parameter key="max_depth" value="8"/>
+        <parameter key="min_child_weight" value="1.0"/>
+        <parameter key="subsample" value="0.7"/>
+        <parameter key="tree_method" value="auto"/>
+        <parameter key="lambda" value="1.0"/>
+        <parameter key="alpha" value="0.1"/>
+        <parameter key="sample_type" value="uniform"/>
+        <parameter key="normalize_type" value="tree"/>
+        <parameter key="rate_drop" value="0.0"/>
+        <parameter key="skip_drop" value="0.0"/>
+        <parameter key="updater" value="shotgun"/>
+        <parameter key="feature_selector" value="cyclic"/>
+        <parameter key="top_k" value="0"/>
+        <enumeration key="expert_parameters">
+          <parameter key="parameter" value="scale_pos_weight.5\.0"/>
+          <parameter key="parameter" value="colsample_bytree.\.7"/>
+        </enumeration>
+      </operator>
       <connect from_op="Split Data from Starting" from_port="output 1" to_op="runPFeature" to_port="input 1"/>
       <connect from_op="Split Data from Starting" from_port="output 2" to_op="Glue Labels" to_port="input 2"/>
       <connect from_op="runPFeature" from_port="output 1" to_op="Glue Labels" to_port="input 1"/>
-      <connect from_op="Glue Labels" from_port="output 1" to_op="Set Role (3)" to_port="example set input"/>
-      <connect from_op="Set Role (3)" from_port="example set output" to_op="Weight by Information Gain" to_port="example set"/>
+      <connect from_op="Read CSV" from_port="output" to_op="Write CSV (2)" to_port="input"/>
+      <connect from_op="Write CSV (2)" from_port="through" to_op="Set Role (3)" to_port="example set input"/>
+      <connect from_op="Set Role (3)" from_port="example set output" to_op="Cross Validation" to_port="example set"/>
       <connect from_op="Weight by Information Gain" from_port="weights" to_op="Select by Weights" to_port="weights"/>
       <connect from_op="Weight by Information Gain" from_port="example set" to_op="Select by Weights" to_port="example set input"/>
-      <connect from_op="Select by Weights" from_port="example set output" to_op="Cross Validation" to_port="example set"/>
-      <connect from_op="Select by Weights" from_port="weights" to_port="result 3"/>
       <connect from_op="Cross Validation" from_port="model" to_port="result 1"/>
       <connect from_op="Cross Validation" from_port="test result set" to_op="Write CSV" to_port="input"/>
       <connect from_op="Cross Validation" from_port="performance 1" to_port="result 2"/>
@@ -618,7 +722,6 @@
       <portSpacing port="sink_result 1" spacing="0"/>
       <portSpacing port="sink_result 2" spacing="0"/>
       <portSpacing port="sink_result 3" spacing="0"/>
-      <portSpacing port="sink_result 4" spacing="0"/>
     </process>
   </operator>
 </process>

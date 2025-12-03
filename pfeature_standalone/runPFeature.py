@@ -5,8 +5,8 @@ import pandas as pd
 # Configure which pfeature jobs to run - add or remove methods as needed
 PFEATURE_JOBS = ['aac',
                  'dpc',
-                'paac',
-                'rri'              
+                 'pcp',
+                 'ddr'           
                 ]
 
 def rm_main(pfeatureinputfilepath):
@@ -18,11 +18,24 @@ def rm_main(pfeatureinputfilepath):
     for job in PFEATURE_JOBS:
         temp_output = f"CSVTEMP_{job}.csv"
 
-        # Run pfeature exactly like the original - with hardcoded input path
-        subprocess.run(f"python pfeature_comp.py -i ../Dataset/Unfinished/pfeatureSequenced.fa -o {temp_output} -j {job}", shell=True)
+        print(f"\n{'='*60}")
+        print(f"Starting feature extraction: {job.upper()}")
+        print(f"{'='*60}")
+
+        # Run pfeature with real-time output display
+        # Use shell=True to allow output streaming
+        result = subprocess.run(
+            f"python pfeature_comp.py -i ../Dataset/Unfinished/pfeatureSequenced.fa -o {temp_output} -j {job}",
+            shell=True,
+            text=True
+        )
+
+        if result.returncode != 0:
+            print(f"WARNING: {job.upper()} extraction had non-zero exit code: {result.returncode}")
 
         df_job = pd.read_csv(temp_output)
         feature_dfs.append(df_job)
+        print(f"✓ {job.upper()} complete - extracted {len(df_job.columns)} features")
 
     # Combine all feature sets horizontally (concatenate columns)
     # First dataframe includes the sequence identifiers, others just add features

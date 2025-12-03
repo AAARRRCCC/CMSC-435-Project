@@ -3,6 +3,8 @@ from imblearn.over_sampling import BorderlineSMOTE
 from imblearn.combine import SMOTETomek, SMOTEENN
 import pandas as pd
 from collections import Counter
+from sklearn.impute import SimpleImputer
+import numpy as np
 
 
 def _make_numeric(X: pd.DataFrame) -> pd.DataFrame:
@@ -29,6 +31,38 @@ def _make_numeric(X: pd.DataFrame) -> pd.DataFrame:
     return X_num
 
 
+def _handle_missing_values(X: pd.DataFrame) -> pd.DataFrame:
+    """
+    Handle missing values (NaN) in the dataset using mean imputation.
+    BorderlineSMOTE cannot handle NaN values, so we need to impute them first.
+    """
+    # Check if there are any NaN values
+    if X.isnull().any().any():
+        nan_count = X.isnull().sum().sum()
+        print(f"Warning: Found {nan_count} NaN values. Imputing...")
+
+        # Find columns that are entirely NaN
+        all_nan_cols = X.columns[X.isnull().all()].tolist()
+        if all_nan_cols:
+            print(f"  - {len(all_nan_cols)} columns are entirely NaN: {all_nan_cols[:5]}{'...' if len(all_nan_cols) > 5 else ''}")
+            print(f"  - Filling all-NaN columns with 0.0")
+            # Fill entirely NaN columns with 0
+            X[all_nan_cols] = 0.0
+
+        # Now impute remaining NaN values (partial NaN columns) with mean
+        if X.isnull().any().any():
+            # Use SimpleImputer with mean strategy for remaining NaN values
+            imputer = SimpleImputer(strategy='mean')
+            X_imputed = pd.DataFrame(
+                imputer.fit_transform(X),
+                columns=X.columns,
+                index=X.index
+            )
+            return X_imputed
+
+    return X
+
+
 def main():
     df = pd.read_csv('../Dataset/full_normalized.csv')
 
@@ -37,6 +71,9 @@ def main():
 
     # Make sure all feature columns are numeric before SMOTE
     x_num = _make_numeric(x)
+
+    # Handle missing values (NaN) before SMOTE
+    x_num = _handle_missing_values(x_num)
 
     print(f'Original dataset shape: {Counter(y)}')
 
@@ -63,6 +100,9 @@ def rm_main(df: pd.DataFrame) -> pd.DataFrame:
 
     # Make sure all feature columns are numeric before SMOTE
     x_num = _make_numeric(x)
+
+    # Handle missing values (NaN) before SMOTE
+    x_num = _handle_missing_values(x_num)
 
     smote = BorderlineSMOTE(
         sampling_strategy={'DNA': 3000, 'RNA': 2000, 'DRNA': 500},

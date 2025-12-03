@@ -45,3 +45,9 @@ Dataset/full_normalized_BSMOTE.csv
 TempfilesAndOutput/predictions_output.csv
 TempfilesAndOutput/predictions_output.csv
 TempfilesAndOutput/predictions_output.csv
+
+*.aac
+*.dpc
+*.rri
+tempfile_out
+nul

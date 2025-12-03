@@ -78,10 +78,15 @@ def rm_main(filepath):
         # Add separator and timestamp header
         f.write("\n" + "="*80 + "\n")
         f.write(f"RUN DATE: {timestamp}\n")
-        f.write(f"USING AAC 20 features + DPC ~400 + PAAC, RRI, ACR, PCP, AAI, top 400 features, weighted by information gain, weights normalized before chosen\n")
+        f.write(f"FEATURES: AAC + DPC + PCP + DDR + PAAC, all features\n")
         f.write(f"NO custom prediction thresholds, \n")
-        f.write(f"Stacking with XGBoost[150 rounds, LR=0.05, depth=8], GBTrees, and Random Forest, meta learner = decision tree [maximal depth 30, NO pruning]\n")
-        f.write("="*80 + "\n\n")
+        f.write(f"Borderline SMOTE, DNA 2000, RNA 2000, DRNA 500\n")
+        f.write(f"Stacking\n")
+        f.write(f"GBT [200 trees, .05 LR, 8 depth],\n")
+        f.write(f"XGBoost [150 rounds, .05 LR, 8 depth, .8 subsample]\n")
+        f.write(f"with Random Forest\n")
+        f.write(f"Decision tree max depth 30 meta learner\n")
+        f.write("="*80 + "\n\n")    
 
         # Write overall accuracy first
         f.write(f"OVERALL ACCURACY: {overallAccuracy:.3f}%\n\n")

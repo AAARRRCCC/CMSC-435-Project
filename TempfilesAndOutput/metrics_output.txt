@@ -1079,6 +1079,7 @@ DRNA           0    0    0     2
 ================================================================================
 RUN DATE: 2025-12-02 13:22:27
 USING AAC 20 features + DPC ~400 + PAAC, ALL features, NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3000, RNA 2000, DRNA 500
 Stacking with XGBoost[150 rounds, LR=0.05, depth=8], GBTrees, and Random Forest, meta learner = decision tree [maximal depth 30, NO pruning]
 ================================================================================
 
@@ -1110,3 +1111,540 @@ nonDRNA     7785  308  343    18
 RNA           41  212    8     0
 DNA           32    3   40     2
 DRNA           0    0    0     2
+
+================================================================================
+RUN DATE: 2025-12-02 15:00:07
+USING AAC 20 features + DPC ~400 + PAAC, RRI, top 400 features, weighted by information gain, weights normalized before chosen
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3000, RNA 2000, DRNA 500
+Stacking with XGBoost[150 rounds, LR=0.05, depth=8], GBTrees, and Random Forest, meta learner = decision tree [maximal depth 30, NO pruning]
+================================================================================
+
+OVERALL ACCURACY: 91.358%
+
+Label: nonDRNA
+	Specificity: 77.713
+	Sensitivity: 92.062
+	Accuracy: 91.506
+	MCC: 0.437
+Label: RNA
+	Specificity: 96.321
+	Sensitivity: 80.385
+	Accuracy: 95.849
+	MCC: 0.549
+Label: DNA
+	Specificity: 95.984
+	Sensitivity: 52.564
+	Accuracy: 95.599
+	MCC: 0.221
+Label: DRNA
+	Specificity: 99.772
+	Sensitivity: 66.667
+	Accuracy: 99.761
+	MCC: 0.246
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7782  314  339    18
+RNA           41  209   10     0
+DNA           35    0   41     2
+DRNA           0    0    1     2
+
+================================================================================
+RUN DATE: 2025-12-02 15:32:01
+USING AAC 20 features + DPC ~400 + PAAC, RRI, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3000, RNA 2000, DRNA 500
+GBT max depth 10, min rows 5, 4 bins, .05 lr, .8 sample rate
+================================================================================
+
+OVERALL ACCURACY: 91.403%
+
+Label: nonDRNA
+	Specificity: 79.814
+	Sensitivity: 91.985
+	Accuracy: 91.540
+	MCC: 0.437
+Label: RNA
+	Specificity: 96.300
+	Sensitivity: 81.818
+	Accuracy: 95.884
+	MCC: 0.552
+Label: DNA
+	Specificity: 95.933
+	Sensitivity: 54.545
+	Accuracy: 95.622
+	MCC: 0.211
+Label: DRNA
+	Specificity: 99.772
+	Sensitivity: 66.667
+	Accuracy: 99.761
+	MCC: 0.246
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7793  315  346    18
+RNA           38  207    8     0
+DNA           27    1   36     2
+DRNA           0    0    1     2
+
+================================================================================
+RUN DATE: 2025-12-02 15:54:36
+USING AAC 20 features + DPC ~400 + PAAC, RRI, top 400 features weighted normalized information gain
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3000, RNA 2000, DRNA 500
+Non Weighted Voting Ensemble, GBT XGBoost, Random Forest
+================================================================================
+
+OVERALL ACCURACY: 90.550%
+
+Label: nonDRNA
+	Specificity: 76.364
+	Sensitivity: 91.043
+	Accuracy: 90.675
+	MCC: 0.341
+Label: RNA
+	Specificity: 95.454
+	Sensitivity: 76.608
+	Accuracy: 95.088
+	MCC: 0.421
+Label: DNA
+	Specificity: 95.805
+	Sensitivity: 52.174
+	Accuracy: 95.577
+	MCC: 0.168
+Label: DRNA
+	Specificity: 99.772
+	Sensitivity: 66.667
+	Accuracy: 99.761
+	MCC: 0.246
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7806  392  358    18
+RNA           32  131    8     0
+DNA           20    0   24     2
+DRNA           0    0    1     2
+
+================================================================================
+RUN DATE: 2025-12-02 16:07:52
+USING AAC 20 features + DPC ~400 + PAAC, RRI, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3000, RNA 2000, DRNA 500
+Non Weighted Voting Ensemble, GBT XGBoost, Random Forest
+================================================================================
+
+OVERALL ACCURACY: 90.607%
+
+Label: nonDRNA
+	Specificity: 79.208
+	Sensitivity: 90.968
+	Accuracy: 90.698
+	MCC: 0.341
+Label: RNA
+	Specificity: 95.427
+	Sensitivity: 82.051
+	Accuracy: 95.190
+	MCC: 0.432
+Label: DNA
+	Specificity: 95.783
+	Sensitivity: 51.163
+	Accuracy: 95.565
+	MCC: 0.159
+Label: DRNA
+	Specificity: 99.772
+	Sensitivity: 66.667
+	Accuracy: 99.761
+	MCC: 0.246
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7816  395  363    18
+RNA           23  128    5     0
+DNA           19    0   22     2
+DRNA           0    0    1     2
+
+================================================================================
+RUN DATE: 2025-12-02 16:27:54
+USING AAC 20 features + DPC ~400, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 2500, RNA 2000, DRNA 500
+Non Weighted Voting Ensemble, GBT XGBoost, Random Forest
+================================================================================
+
+OVERALL ACCURACY: 90.471%
+
+Label: nonDRNA
+	Specificity: 80.460
+	Sensitivity: 90.766
+	Accuracy: 90.562
+	MCC: 0.322
+Label: RNA
+	Specificity: 95.172
+	Sensitivity: 77.206
+	Accuracy: 94.894
+	MCC: 0.378
+Label: DNA
+	Specificity: 95.821
+	Sensitivity: 69.444
+	Accuracy: 95.713
+	MCC: 0.202
+Label: DRNA
+	Specificity: 99.773
+	Sensitivity: 100.000
+	Accuracy: 99.773
+	MCC: 0.301
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7824  418  360    18
+RNA           25  105    6     0
+DNA            9    0   25     2
+DRNA           0    0    0     2
+
+================================================================================
+RUN DATE: 2025-12-02 16:55:57
+FEATURES: AAC + DPC + PCP + DDR, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 2500, RNA 2000, DRNA 500
+Non Weighted Voting Ensemble, GBT XGBoost, Random Forest
+================================================================================
+
+OVERALL ACCURACY: 91.278%
+
+Label: nonDRNA
+	Specificity: 81.560
+	Sensitivity: 91.706
+	Accuracy: 91.380
+	MCC: 0.419
+Label: RNA
+	Specificity: 96.108
+	Sensitivity: 80.169
+	Accuracy: 95.679
+	MCC: 0.522
+Label: DNA
+	Specificity: 95.864
+	Sensitivity: 69.048
+	Accuracy: 95.736
+	MCC: 0.217
+Label: DRNA
+	Specificity: 99.772
+	Sensitivity: 66.667
+	Accuracy: 99.761
+	MCC: 0.246
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7806  333  354    19
+RNA           40  190    7     0
+DNA           12    0   29     1
+DRNA           0    0    1     2
+
+================================================================================
+RUN DATE: 2025-12-02 17:23:39
+FEATURES: AAC + DPC + PCP + DDR, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3000, RNA 2500, DRNA 500
+Non Weighted Voting Ensemble
+GBT [300 trees, .03 LR, 10 depth],
+XGBoost [250 rounds, .03 LR, 10 depth, .8 subsample]
+NO Random Forest
+================================================================================
+
+OVERALL ACCURACY: 89.356%
+
+Label: nonDRNA
+	Specificity: 0.000
+	Sensitivity: 89.356
+	Accuracy: 89.356
+	MCC: 0.000
+Label: RNA
+	Specificity: 94.053
+	Sensitivity: 0.000
+	Accuracy: 94.053
+	MCC: 0.000
+Label: DNA
+	Specificity: 95.554
+	Sensitivity: 0.000
+	Accuracy: 95.554
+	MCC: 0.000
+Label: DRNA
+	Specificity: 99.750
+	Sensitivity: 0.000
+	Accuracy: 99.750
+	MCC: 0.000
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7858  523  391    22
+RNA            0    0    0     0
+DNA            0    0    0     0
+DRNA           0    0    0     0
+
+================================================================================
+RUN DATE: 2025-12-02 18:06:21
+FEATURES: AAC + DPC + PCP + DDR, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3000, RNA 2500, DRNA 500
+Non Weighted Voting Ensemble
+GBT [300 trees, .03 LR, 10 depth],
+XGBoost [250 rounds, .03 LR, 10 depth, .8 subsample]
+NO Random Forest
+================================================================================
+
+OVERALL ACCURACY: 89.356%
+
+Label: nonDRNA
+	Specificity: 0.000
+	Sensitivity: 89.356
+	Accuracy: 89.356
+	MCC: 0.000
+Label: RNA
+	Specificity: 94.053
+	Sensitivity: 0.000
+	Accuracy: 94.053
+	MCC: 0.000
+Label: DNA
+	Specificity: 95.554
+	Sensitivity: 0.000
+	Accuracy: 95.554
+	MCC: 0.000
+Label: DRNA
+	Specificity: 99.750
+	Sensitivity: 0.000
+	Accuracy: 99.750
+	MCC: 0.000
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7858  523  391    22
+RNA            0    0    0     0
+DNA            0    0    0     0
+DRNA           0    0    0     0
+
+================================================================================
+RUN DATE: 2025-12-02 18:21:06
+FEATURES: AAC + DPC + PCP + DDR, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3000, RNA 2500, DRNA 500
+Non Weighted Voting Ensemble
+GBT [300 trees, .03 LR, 10 depth],
+XGBoost [250 rounds, .03 LR, 10 depth, .8 subsample]
+NO Random Forest
+================================================================================
+
+OVERALL ACCURACY: 89.356%
+
+Label: nonDRNA
+	Specificity: 0.000
+	Sensitivity: 89.356
+	Accuracy: 89.356
+	MCC: 0.000
+Label: RNA
+	Specificity: 94.053
+	Sensitivity: 0.000
+	Accuracy: 94.053
+	MCC: 0.000
+Label: DNA
+	Specificity: 95.554
+	Sensitivity: 0.000
+	Accuracy: 95.554
+	MCC: 0.000
+Label: DRNA
+	Specificity: 99.750
+	Sensitivity: 0.000
+	Accuracy: 99.750
+	MCC: 0.000
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7858  523  391    22
+RNA            0    0    0     0
+DNA            0    0    0     0
+DRNA           0    0    0     0
+
+================================================================================
+RUN DATE: 2025-12-02 18:41:54
+FEATURES: AAC + DPC + PCP + DDR, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3000, RNA 2500, DRNA 500
+Non Weighted Voting Ensemble
+GBT [300 trees, .03 LR, 10 depth],
+XGBoost [250 rounds, .03 LR, 10 depth, .8 subsample]
+with Random Forest
+================================================================================
+
+OVERALL ACCURACY: 91.255%
+
+Label: nonDRNA
+	Specificity: 80.822
+	Sensitivity: 91.767
+	Accuracy: 91.403
+	MCC: 0.422
+Label: RNA
+	Specificity: 96.161
+	Sensitivity: 78.313
+	Accuracy: 95.656
+	MCC: 0.522
+Label: DNA
+	Specificity: 95.830
+	Sensitivity: 63.415
+	Accuracy: 95.679
+	MCC: 0.196
+Label: DRNA
+	Specificity: 99.773
+	Sensitivity: 100.000
+	Accuracy: 99.773
+	MCC: 0.301
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7802  328  354    18
+RNA           43  195   11     0
+DNA           13    0   26     2
+DRNA           0    0    0     2
+
+================================================================================
+RUN DATE: 2025-12-02 19:43:36
+FEATURES: AAC + DPC + PCP + DDR, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 3500, RNA 3000, DRNA 500
+Non Weighted Voting Ensemble
+GBT [300 trees, .03 LR, 10 depth],
+XGBoost [250 rounds, .03 LR, 10 depth, .8 subsample]
+with Random Forest
+================================================================================
+
+OVERALL ACCURACY: 91.187%
+
+Label: nonDRNA
+	Specificity: 81.181
+	Sensitivity: 91.599
+	Accuracy: 91.278
+	MCC: 0.408
+Label: RNA
+	Specificity: 96.053
+	Sensitivity: 80.435
+	Accuracy: 95.645
+	MCC: 0.516
+Label: DNA
+	Specificity: 95.820
+	Sensitivity: 65.789
+	Accuracy: 95.690
+	MCC: 0.196
+Label: DRNA
+	Specificity: 99.772
+	Sensitivity: 66.667
+	Accuracy: 99.761
+	MCC: 0.246
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7807  338  360    18
+RNA           40  185    5     0
+DNA           11    0   25     2
+DRNA           0    0    1     2
+
+================================================================================
+RUN DATE: 2025-12-02 19:54:20
+FEATURES: AAC + DPC + PCP + DDR, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 2000, RNA 2000, DRNA 500
+GBT[default] 
+================================================================================
+
+OVERALL ACCURACY: 89.231%
+
+Label: nonDRNA
+	Specificity: 53.577
+	Sensitivity: 92.506
+	Accuracy: 89.845
+	MCC: 0.377
+Label: RNA
+	Specificity: 96.407
+	Sensitivity: 56.812
+	Accuracy: 94.655
+	MCC: 0.463
+Label: DNA
+	Specificity: 95.971
+	Sensitivity: 21.845
+	Accuracy: 94.235
+	MCC: 0.131
+Label: DRNA
+	Specificity: 99.772
+	Sensitivity: 33.333
+	Accuracy: 99.727
+	MCC: 0.173
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7579  291  307    16
+RNA          127  221   39     2
+DNA          148   11   45     2
+DRNA           4    0    0     2
+
+================================================================================
+RUN DATE: 2025-12-02 20:03:15
+FEATURES: AAC + DPC + PCP + DDR, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 2000, RNA 2000, DRNA 500
+GBT[default] 
+================================================================================
+
+OVERALL ACCURACY: 91.437%
+
+Label: nonDRNA
+	Specificity: 75.181
+	Sensitivity: 92.553
+	Accuracy: 91.733
+	MCC: 0.466
+Label: RNA
+	Specificity: 96.626
+	Sensitivity: 74.763
+	Accuracy: 95.838
+	MCC: 0.563
+Label: DNA
+	Specificity: 96.045
+	Sensitivity: 48.958
+	Accuracy: 95.531
+	MCC: 0.227
+Label: DRNA
+	Specificity: 99.773
+	Sensitivity: 100.000
+	Accuracy: 99.773
+	MCC: 0.301
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7755  285  322    17
+RNA           58  237   22     0
+DNA           45    1   47     3
+DRNA           0    0    0     2
+
+================================================================================
+RUN DATE: 2025-12-02 20:15:52
+FEATURES: AAC + DPC + PCP + DDR, all features
+NO custom prediction thresholds, 
+Borderline SMOTE, DNA 2000, RNA 2000, DRNA 500
+Stacking
+GBT [200 trees, .05 LR, 8 depth],
+XGBoost [150 rounds, .05 LR, 8 depth, .8 subsample]
+with Random Forest
+Decision tree max depth 30 meta learner
+================================================================================
+
+OVERALL ACCURACY: 91.778%
+
+Label: nonDRNA
+	Specificity: 81.186
+	Sensitivity: 92.612
+	Accuracy: 92.108
+	MCC: 0.491
+Label: RNA
+	Specificity: 96.664
+	Sensitivity: 77.419
+	Accuracy: 95.986
+	MCC: 0.578
+Label: DNA
+	Specificity: 96.020
+	Sensitivity: 58.667
+	Accuracy: 95.702
+	MCC: 0.244
+Label: DRNA
+	Specificity: 99.772
+	Sensitivity: 66.667
+	Accuracy: 99.761
+	MCC: 0.246
+
+         nonDRNA  RNA  DNA  DRNA
+nonDRNA     7785  278  325    18
+RNA           49  240   21     0
+DNA           24    5   44     2
+DRNA           0    0    1     2
